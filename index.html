@@ -1859,8 +1859,15 @@
         const anotacoes = document.getElementById('pdf-anotacoes').value.trim();
         const data      = document.getElementById('pdf-data').value;
 
-        // Envia todos os arquivos e guarda os nomes reais
-        const usedNames    = new Set();
+        // Define o nome da nota e subpasta
+        const noteTitulo = titulo || sanitize(currentFiles[0].name.replace(/\.[^.]+$/, ''));
+        const noteName   = sanitize(noteTitulo);
+        // Com múltiplos arquivos ou título explícito → subpasta
+        const useSubfolder = currentFiles.length > 1 || !!titulo;
+        const pastaArquivos = useSubfolder ? `${destino}/${noteName}` : destino;
+
+        // Envia todos os arquivos para a subpasta
+        const usedNames     = new Set();
         const uploadedFiles = [];
 
         for (let i = 0; i < currentFiles.length; i++) {
@@ -1870,7 +1877,7 @@
           const ext      = file.name.split('.').pop().toLowerCase();
           const rawName  = sanitize(file.name.replace(/\.[^.]+$/, ''));
           const fileName = uniqueName(rawName, ext, usedNames);
-          const filePath = `${destino}/${fileName}`;
+          const filePath = `${pastaArquivos}/${fileName}`;
 
           const b64 = await new Promise((res, rej) => {
             const r = new FileReader();
@@ -1883,12 +1890,11 @@
           uploadedFiles.push(fileName);
         }
 
-        // Uma nota .md única que embute todos os arquivos
-        const noteTitulo = titulo || sanitize(currentFiles[0].name.replace(/\.[^.]+$/, ''));
-        const noteName   = sanitize(noteTitulo);
-        const pessoaYaml = pessoaSelected ? `\npessoa: "[[${pessoaSelected}]]"` : '';
-        const embeds     = uploadedFiles.map(f => `![[${f}]]`).join('\n\n');
-        const noteMd     = `---\ndata: ${data}${pessoaYaml}\ntipo: anexo\n---\n\n# ${noteTitulo}\n\n${embeds}${anotacoes ? '\n\n## Anotações\n\n' + anotacoes : ''}`;
+        // Nota .md na raiz da categoria com embeds apontando para a subpasta
+        const pessoaYaml  = pessoaSelected ? `\npessoa: "[[${pessoaSelected}]]"` : '';
+        const embedPrefix = useSubfolder ? `${noteName}/` : '';
+        const embeds      = uploadedFiles.map(f => `![[${embedPrefix}${f}]]`).join('\n\n');
+        const noteMd      = `---\ndata: ${data}${pessoaYaml}\ntipo: anexo\n---\n\n# ${noteTitulo}\n\n${embeds}${anotacoes ? '\n\n## Anotações\n\n' + anotacoes : ''}`;
         await ghPutFile(`${destino}/${noteName}.md`, {
           message: `📝 ${noteTitulo}`, content: toB64(noteMd)
         }).catch(() => {});
