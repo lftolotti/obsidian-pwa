@@ -397,6 +397,60 @@
 
     .empty-icon { font-size: 36px; margin-bottom: 12px; }
 
+    /* Subsection label (EM ANDAMENTO, FINALIZADOS…) */
+    .subsection-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--label-3);
+      margin: 18px 0 8px 2px;
+    }
+
+    /* Lembretes card */
+    .lembretes-card {
+      background: var(--bg-2);
+      border-radius: 14px;
+      border: 0.5px solid var(--glass-b);
+      padding: 14px 16px;
+      margin-bottom: 28px;
+    }
+
+    .lembrete-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 14px;
+      color: var(--label-2);
+      line-height: 1.45;
+      border-bottom: 0.5px solid var(--glass-sep);
+    }
+
+    .lembrete-item:last-child { border-bottom: none; }
+
+    .lembrete-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--label-3);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    /* Task count badge */
+    .task-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-top: 6px;
+      display: inline-block;
+    }
+
+    .task-badge.open     { background: rgba(255,69,58,0.12);  color: #ff6b60; }
+    .task-badge.done     { background: rgba(48,209,88,0.12);  color: #30d158; }
+    .task-badge.none     { background: var(--fill-2);          color: var(--label-3); }
+
     /* People grid */
     .people-grid-home {
       display: grid;
@@ -630,21 +684,9 @@
         <button onclick="loadHome(true)" style="background:none;border:none;color:var(--label-3);font-size:22px;cursor:pointer;padding:8px 0;margin-top:4px;">↻</button>
       </div>
 
-      <div class="home-section" id="home-semana">
-        <div class="home-section-label">Semana</div>
-        <div class="empty-state">
-          <div class="empty-icon">📋</div>
-          Nenhum relatório ainda.<br>Gere um aqui no terminal com Claude.
-        </div>
-      </div>
-
-      <div class="home-section" id="home-pessoas">
-        <div class="home-section-label">Pessoas</div>
-        <div class="empty-state">
-          <div class="empty-icon">👤</div>
-          Carregando...
-        </div>
-      </div>
+      <div id="home-lembretes"></div>
+      <div id="home-projetos"></div>
+      <div id="home-pessoas"></div>
     </div>
 
     <!-- ── NOTA ────────────────────────────────────────────────── -->
@@ -966,10 +1008,13 @@
             semanal: object(expression: "main:SEMANAL") {
               ... on Tree { entries { name object { ... on Blob { text } } } }
             }
+            projetos: object(expression: "main:PROJETOS") {
+              ... on Tree { entries { name object { ... on Blob { text } } } }
+            }
           }
         }`);
 
-        const payload = { pessoas: parsePessoas(data), semanal: parseSemanal(data) };
+        const payload = { pessoas: parsePessoas(data), semanal: parseSemanal(data), projetos: parseProjetos(data) };
         setHomeCache(payload);
         renderHome(payload);
       } catch(e) {
@@ -980,11 +1025,16 @@
     function parsePessoas(data) {
       return (data.repository.pessoas?.entries || [])
         .filter(e => e.name.endsWith('.md') && !e.name.startsWith('Exemplo') && e.object?.text)
-        .map(e => ({
-          name: e.name.replace('.md',''),
-          fm:   parseFrontmatter(e.object.text),
-          ctx:  parseSection(e.object.text, 'Contexto')
-        }))
+        .map(e => {
+          const text = e.object.text;
+          const open = (text.match(/- \[ \]/g) || []).length;
+          return {
+            name: e.name.replace('.md',''),
+            fm:   parseFrontmatter(text),
+            ctx:  parseSection(text, 'Contexto'),
+            open
+          };
+        })
         .sort((a,b) => a.name.localeCompare(b.name, 'pt'));
     }
 
@@ -996,21 +1046,108 @@
       return { title: entries[0].name.replace('.md',''), content: entries[0].object.text };
     }
 
-    function renderHome({ pessoas, semanal }) {
-      // Semana
-      const semEl = document.getElementById('home-semana');
-      if (semanal) {
-        semEl.innerHTML = `
-          <div class="home-section-label">Semana</div>
-          <div class="week-card">
-            <div class="week-card-title">${semanal.title}</div>
-            <div class="week-card-body">${mdToHtml(stripFrontmatter(semanal.content))}</div>
-          </div>`;
-      }
+    function parseProjetos(data) {
+      return (data.repository.projetos?.entries || [])
+        .filter(e => e.name.endsWith('.md') && !e.name.startsWith('Exemplo') && e.object?.text)
+        .map(e => {
+          const text = e.object.text;
+          const open = (text.match(/- \[ \]/g) || []).length;
+          const done = (text.match(/- \[x\]/gi) || []).length;
+          return {
+            name:     e.name.replace('.md',''),
+            fm:       parseFrontmatter(text),
+            ctx:      parseSection(text, 'Contexto') || parseSection(text, 'Objetivo'),
+            open,
+            done,
+            finished: open === 0 && done > 0
+          };
+        })
+        .sort((a,b) => a.name.localeCompare(b.name, 'pt'));
+    }
 
-      // Pessoas
+    function renderHome({ pessoas, semanal, projetos }) {
+      renderLembretes(semanal);
+      renderProjetos(projetos);
       peopleData = pessoas;
-      renderPeopleGrid(document.getElementById('home-pessoas'), pessoas);
+      renderPessoasHome(pessoas);
+    }
+
+    function renderLembretes(semanal) {
+      const el = document.getElementById('home-lembretes');
+      if (!semanal) { el.innerHTML = ''; return; }
+
+      const content = stripFrontmatter(semanal.content);
+      const items   = content.split('\n')
+        .filter(l => /^- \[ \]/.test(l))
+        .map(l => l.replace(/^- \[ \]\s*/, '').trim())
+        .slice(0, 8);
+
+      if (!items.length) { el.innerHTML = ''; return; }
+
+      el.innerHTML = `
+        <div class="home-section-label">Lembretes da Semana</div>
+        <div class="lembretes-card">
+          ${items.map(t => `
+            <div class="lembrete-item">
+              <div class="lembrete-dot"></div>
+              <span>${t}</span>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    function renderProjetos(projetos) {
+      const el = document.getElementById('home-projetos');
+      if (!projetos.length) { el.innerHTML = ''; return; }
+
+      const ativos      = projetos.filter(p => !p.finished);
+      const finalizados = projetos.filter(p => p.finished);
+
+      const cardHtml = (p, i) => `
+        <div class="person-card" onclick="openProjectSheet(${i})">
+          <div class="person-card-name">${p.name}</div>
+          <div class="person-card-role">${p.fm.area || p.fm.tema || ''}</div>
+          ${p.open
+            ? `<span class="task-badge open">${p.open} task${p.open > 1 ? 's' : ''} abertas</span>`
+            : p.done
+              ? `<span class="task-badge done">✓ finalizado</span>`
+              : `<span class="task-badge none">sem tasks</span>`}
+        </div>`;
+
+      el.innerHTML = `
+        <div class="home-section-label">Projetos</div>
+        ${ativos.length ? `
+          <div class="subsection-label">Em andamento</div>
+          <div class="people-grid-home">${ativos.map(cardHtml).join('')}</div>` : ''}
+        ${finalizados.length ? `
+          <div class="subsection-label">Finalizados</div>
+          <div class="people-grid-home">${finalizados.map(cardHtml).join('')}</div>` : ''}`;
+
+      window._projetos = projetos;
+    }
+
+    function renderPessoasHome(pessoas) {
+      const el = document.getElementById('home-pessoas');
+
+      const comPendencia = pessoas.filter(p => p.open > 0);
+      const semPendencia = pessoas.filter(p => p.open === 0);
+
+      const cardHtml = (p, i) => `
+        <div class="person-card" onclick="openSheet(${i})">
+          <div class="person-card-name">${p.name}</div>
+          <div class="person-card-role">${p.fm.cargo || ''}</div>
+          ${p.open
+            ? `<span class="task-badge open">${p.open} pendência${p.open > 1 ? 's' : ''}</span>`
+            : `<span class="person-card-rel ${(p.fm.relacao||'').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z-]/g,'')}">${p.fm.relacao || '—'}</span>`}
+        </div>`;
+
+      el.innerHTML = `
+        <div class="home-section-label">Pessoas</div>
+        ${comPendencia.length ? `
+          <div class="subsection-label">Com pendências</div>
+          <div class="people-grid-home">${comPendencia.map(cardHtml).join('')}</div>` : ''}
+        ${semPendencia.length ? `
+          <div class="subsection-label">Sem pendências</div>
+          <div class="people-grid-home">${semPendencia.map(cardHtml).join('')}</div>` : ''}`;
     }
 
     function renderPeopleGrid(el, people) {
@@ -1045,8 +1182,21 @@
       const p = peopleData[i];
       document.getElementById('sheet-name').textContent    = p.name;
       document.getElementById('sheet-role').textContent    = p.fm.cargo || '';
-      document.getElementById('sheet-company').textContent = p.fm.empresa || '';
+      document.getElementById('sheet-company').textContent = (p.fm.empresa || '') + (p.fm.relacao ? ' · ' + p.fm.relacao : '');
       document.getElementById('sheet-body').textContent    = p.ctx || 'Sem contexto registrado.';
+      document.getElementById('person-sheet').classList.add('open');
+    }
+
+    function openProjectSheet(i) {
+      haptic(6);
+      const p = (window._projetos || [])[i];
+      if (!p) return;
+      document.getElementById('sheet-name').textContent    = p.name;
+      document.getElementById('sheet-role').textContent    = p.fm.area || p.fm.tema || 'Projeto';
+      document.getElementById('sheet-company').textContent = p.open
+        ? `${p.open} task${p.open>1?'s':''} abertas · ${p.done} concluídas`
+        : p.done ? `✓ Finalizado · ${p.done} tasks concluídas` : 'Sem tasks registradas';
+      document.getElementById('sheet-body').textContent    = p.ctx || 'Sem descrição registrada.';
       document.getElementById('person-sheet').classList.add('open');
     }
 
