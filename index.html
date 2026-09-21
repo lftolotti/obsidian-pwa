@@ -10,61 +10,32 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#000000">
   <style>
-    /* ─── Design Tokens ─────────────────────────────────────────────── */
+    /* ─── Tokens ────────────────────────────────────────────────────── */
     :root {
-      --bg:           #000000;
-      --bg-2:         #1c1c1e;
-      --bg-3:         #2c2c2e;
-      --bg-4:         #3a3a3c;
-
-      --glass:        rgba(28, 28, 30, 0.82);
-      --glass-strong: rgba(18, 18, 20, 0.92);
-      --glass-card:   rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.09);
-      --glass-sep:    rgba(84, 84, 88, 0.55);
-
-      --label:        #ffffff;
-      --label-2:      rgba(235, 235, 245, 0.60);
-      --label-3:      rgba(235, 235, 245, 0.30);
-      --label-4:      rgba(235, 235, 245, 0.14);
-
-      --fill:         rgba(120, 120, 128, 0.30);
-      --fill-2:       rgba(120, 120, 128, 0.22);
-
-      --accent:       #ffffff;
-      --accent-dark:  rgba(255, 255, 255, 0.90);
-      --accent-soft:  rgba(255, 255, 255, 0.10);
-      --accent-glow:  rgba(255, 255, 255, 0.12);
-
-      --green:        #30d158;
-      --green-soft:   rgba(48, 209, 88, 0.14);
-      --red:          #ff453a;
-      --red-soft:     rgba(255, 69, 58, 0.14);
-      --yellow:       #ffd60a;
-
-      --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
-      --font-rounded: 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-
-      --topbar-h: 56px;
-      --tabbar-h: 50px;
+      --bg:          #000000;
+      --bg-2:        #1c1c1e;
+      --glass:       rgba(28, 28, 30, 0.82);
+      --glass-b:     rgba(255, 255, 255, 0.09);
+      --glass-sep:   rgba(84, 84, 88, 0.55);
+      --label:       #ffffff;
+      --label-2:     rgba(235, 235, 245, 0.60);
+      --label-3:     rgba(235, 235, 245, 0.30);
+      --label-4:     rgba(235, 235, 245, 0.14);
+      --fill-2:      rgba(120, 120, 128, 0.22);
+      --green:       #30d158;
+      --red:         #ff453a;
+      --yellow:      #ffd60a;
+      --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bot: env(safe-area-inset-bottom, 0px);
-
-      --r-sm: 8px;
-      --r-md: 12px;
-      --r-lg: 16px;
-      --r-xl: 20px;
-
-      --t:        180ms cubic-bezier(0.4, 0, 0.2, 1);
-      --t-spring: 420ms cubic-bezier(0.34, 1.46, 0.64, 1);
-      --t-slow:   320ms cubic-bezier(0.4, 0, 0.2, 1);
+      --t:       180ms cubic-bezier(0.4, 0, 0.2, 1);
+      --t-s:     420ms cubic-bezier(0.34, 1.46, 0.64, 1);
     }
 
     /* ─── Reset ─────────────────────────────────────────────────────── */
     *, *::before, *::after {
       box-sizing: border-box; margin: 0; padding: 0;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
     html { height: 100%; }
@@ -79,89 +50,6 @@
       flex-direction: column;
     }
 
-    /* ─── Glass Mixin ────────────────────────────────────────────────── */
-    .glass {
-      background: var(--glass);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-    }
-
-    /* ─── Top Bar ────────────────────────────────────────────────────── */
-    .topbar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 200;
-      height: calc(var(--topbar-h) + var(--safe-top));
-      padding-top: var(--safe-top);
-      border-bottom: 0.5px solid transparent;
-      display: flex;
-      align-items: flex-end;
-      padding-bottom: 11px;
-      padding-left: 20px;
-      padding-right: 20px;
-      transition: border-color var(--t);
-    }
-
-    .topbar.scrolled {
-      border-bottom-color: var(--glass-border);
-    }
-
-    .topbar-content {
-      display: flex;
-      align-items: center;
-      width: 100%;
-    }
-
-    .topbar-title {
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: -0.2px;
-      color: var(--label);
-      opacity: 0;
-      transform: translateY(4px);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-
-    .topbar-title.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .topbar-status {
-      font-size: 12px;
-      color: var(--label-3);
-      font-weight: 400;
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    /* ─── Large Title (HIG) ──────────────────────────────────────────── */
-    .large-title {
-      font-size: 34px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: var(--label);
-      padding: 8px 0 4px;
-      margin-bottom: 24px;
-      line-height: 1.1;
-    }
-
-    .status-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .status-dot.ok      { background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .status-dot.err     { background: var(--red); }
-    .status-dot.pending { background: var(--yellow); animation: pulse 1.8s ease infinite; }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.35; }
-    }
-
     /* ─── Scroll Area ────────────────────────────────────────────────── */
     .scroll-area {
       flex: 1;
@@ -169,38 +57,93 @@
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding-top: calc(var(--topbar-h) + var(--safe-top) + 16px);
+      padding-top: calc(var(--safe-top) + 20px);
       padding-bottom: calc(60px + var(--safe-bot) + 40px);
       padding-left: 16px;
       padding-right: 16px;
     }
 
-    /* ─── Panels — iOS slide transition ─────────────────────────────── */
-    .panel {
-      display: none;
-      will-change: transform, opacity;
-    }
-    .panel.active {
-      display: block;
-      animation: slideIn 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
-    }
-    .panel.slide-left  { animation-name: slideInLeft; }
-    .panel.slide-right { animation-name: slideInRight; }
+    /* ─── Panels ─────────────────────────────────────────────────────── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel.slide-left  { animation: slideLeft  0.26s cubic-bezier(0.4,0,0.2,1) both; }
+    .panel.slide-right { animation: slideRight 0.26s cubic-bezier(0.4,0,0.2,1) both; }
 
-    @keyframes slideInLeft {
-      from { opacity: 0; transform: translateX(28px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes slideInRight {
-      from { opacity: 0; transform: translateX(-28px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(0) scale(0.98); }
-      to   { opacity: 1; transform: translateX(0) scale(1); }
+    @keyframes slideLeft  { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes slideRight { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
+
+    /* ─── Sticky Header (Large Title + Save Btn) ─────────────────────── */
+    .sticky-header {
+      position: sticky;
+      top: calc(var(--safe-top) + 4px);
+      z-index: 50;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0 20px;
+      transition: padding var(--t), background var(--t);
     }
 
-    /* ─── Section (iOS Grouped Inset) ────────────────────────────────── */
+    .sticky-header.compact {
+      padding: 6px 0 10px;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      margin: 0 -16px;
+      padding-left: 16px;
+      padding-right: 16px;
+      border-bottom: 0.5px solid var(--glass-b);
+    }
+
+    .large-title {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      transition: font-size var(--t), letter-spacing var(--t);
+    }
+
+    .sticky-header.compact .large-title {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      align-self: center;
+    }
+
+    /* ─── Save Button ────────────────────────────────────────────────── */
+    .save-btn {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.10);
+      border: 0.5px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      color: var(--label);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: padding var(--t), font-size var(--t), background var(--t), transform var(--t-s);
+      margin-top: 6px;
+    }
+
+    .save-btn:active:not(:disabled) { transform: scale(0.94); }
+    .save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .sticky-header.compact .save-btn {
+      padding: 5px 12px;
+      font-size: 13px;
+      margin-top: 0;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .save-btn .btn-icon { display: none; }
+
+    /* ─── Sections ───────────────────────────────────────────────────── */
     .section { margin-bottom: 28px; }
 
     .section-label {
@@ -215,33 +158,62 @@
 
     .section-body {
       background: var(--bg-2);
-      border-radius: var(--r-lg);
+      border-radius: 12px;
       overflow: hidden;
-      border: 0.5px solid var(--glass-border);
+      border: 0.5px solid var(--glass-b);
     }
 
     /* ─── Cells ──────────────────────────────────────────────────────── */
     .cell {
       display: flex;
       align-items: center;
-      min-height: 48px;
-      padding: 0 16px;
+      min-height: 44px;
+      padding: 0 14px;
       position: relative;
     }
 
     .cell + .cell::before {
       content: '';
       position: absolute;
-      top: 0; left: 16px; right: 0;
+      top: 0; left: 14px; right: 0;
       height: 0.5px;
       background: var(--glass-sep);
     }
 
-    .cell-label {
-      font-size: 15px;
+    /* ─── Date chip row (inside title section) ───────────────────────── */
+    .cell-date {
+      min-height: 36px;
+      padding-bottom: 10px;
+      align-items: center;
+    }
+
+    .date-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 11px 4px 8px;
+      background: var(--fill-2);
+      border: 0.5px solid var(--glass-b);
+      border-radius: 20px;
       color: var(--label-2);
-      min-width: 90px;
-      flex-shrink: 0;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background var(--t), color var(--t);
+    }
+
+    .date-chip:active { background: rgba(255,255,255,0.12); }
+    .date-chip-icon { font-size: 14px; line-height: 1; }
+
+    /* Hidden date input — triggered by chip */
+    .date-input-hidden {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
     }
 
     /* ─── Inputs ─────────────────────────────────────────────────────── */
@@ -255,9 +227,9 @@
       color: var(--label);
       font-family: var(--font);
       font-size: 15px;
-      padding: 14px 0;
+      padding: 12px 0;
       width: 100%;
-      caret-color: var(--accent);
+      caret-color: var(--label);
     }
 
     .cell-input::placeholder,
@@ -265,8 +237,7 @@
 
     .cell-textarea {
       resize: none;
-      min-height: 120px;
-      padding: 14px 0;
+      min-height: 130px;
       line-height: 1.55;
     }
 
@@ -274,9 +245,7 @@
       -webkit-appearance: none;
       appearance: none;
       cursor: pointer;
-      color: var(--label);
     }
-
     .cell-select option { background: var(--bg-2); }
 
     .cell-chevron {
@@ -285,181 +254,114 @@
       flex-shrink: 0;
     }
 
-    /* Full-width cell (textarea) */
-    .cell.cell-tall {
-      align-items: flex-start;
-      padding-top: 0;
-      padding-bottom: 0;
-    }
+    .cell.cell-tall { align-items: flex-start; padding-top: 0; padding-bottom: 0; }
 
     /* ─── Chips ──────────────────────────────────────────────────────── */
-    .chips-section .section-body {
-      padding: 12px;
-      background: var(--bg-2);
-    }
+    .chips-section .section-body { padding: 12px; }
 
-    .chips-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-    }
+    .chips-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
 
     .chip {
-      padding: 6px 13px;
+      padding: 5px 13px;
       background: var(--fill-2);
-      border: 0.5px solid var(--glass-border);
-      border-radius: var(--r-xl);
-      font-size: 14px;
+      border: 0.5px solid var(--glass-b);
+      border-radius: 20px;
+      font-size: 13px;
       font-weight: 500;
       color: var(--label-2);
       cursor: pointer;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
-      transition: transform var(--t-spring), background var(--t), color var(--t), border-color var(--t), box-shadow var(--t);
-      will-change: transform;
+      transition: transform var(--t-s), background var(--t), color var(--t), border-color var(--t);
     }
 
-    .chip:active { transform: scale(0.93); }
+    .chip:active { transform: scale(0.92); }
 
     .chip.selected {
-      background: var(--accent-soft);
-      border-color: rgba(168, 85, 247, 0.40);
-      color: var(--accent);
-      box-shadow: 0 0 12px var(--accent-glow);
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.35);
+      color: var(--label);
       transform: scale(1.03);
     }
 
-    .chips-empty {
-      font-size: 13px;
-      color: var(--label-3);
-      padding: 4px 2px;
-    }
+    .chips-empty { font-size: 13px; color: var(--label-3); }
 
     /* ─── File Drop ──────────────────────────────────────────────────── */
     .file-drop {
       background: var(--bg-2);
-      border-radius: var(--r-lg);
+      border-radius: 12px;
       border: 1.5px dashed var(--glass-sep);
-      padding: 32px 20px;
+      padding: 28px 20px;
       text-align: center;
       cursor: pointer;
       transition: border-color var(--t), background var(--t);
       -webkit-tap-highlight-color: transparent;
     }
 
-    .file-drop.has-file,
-    .file-drop:active {
-      border-color: var(--accent);
-      background: var(--accent-soft);
+    .file-drop.has-file, .file-drop:active {
+      border-color: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.04);
     }
 
     .file-drop input[type="file"] { display: none; }
+    .file-drop-icon { font-size: 30px; margin-bottom: 8px; }
+    .file-drop-text { font-size: 15px; font-weight: 500; color: var(--label-2); }
+    .file-drop-hint { font-size: 12px; color: var(--label-3); margin-top: 4px; }
+    .file-drop-name { font-size: 14px; font-weight: 600; color: var(--label); margin-top: 8px; display: none; }
 
-    .file-drop-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
-      line-height: 1;
+    /* ─── New category ───────────────────────────────────────────────── */
+    .new-cat-wrap { display: none; margin-top: 10px; }
+    .new-cat-wrap.show { display: block; }
+
+    .section-footnote {
+      font-size: 12px;
+      color: var(--label-3);
+      padding: 7px 4px 0;
+      line-height: 1.6;
     }
 
-    .file-drop-text {
-      font-size: 15px;
-      font-weight: 500;
+    .section-footnote code {
+      background: var(--fill-2);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 11px;
       color: var(--label-2);
     }
 
-    .file-drop-hint {
-      font-size: 12px;
-      color: var(--label-3);
-      margin-top: 4px;
+    /* ─── Status dot & card ──────────────────────────────────────────── */
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
+    .status-dot.ok      { background: var(--green); box-shadow: 0 0 5px var(--green); }
+    .status-dot.err     { background: var(--red); }
+    .status-dot.pending { background: var(--yellow); animation: pulse 1.8s ease infinite; }
 
-    .file-drop-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--accent);
-      margin-top: 8px;
-    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-    /* ─── New Category ───────────────────────────────────────────────── */
-    .new-cat-wrap {
-      margin-top: 10px;
-      display: none;
-    }
-    .new-cat-wrap.show { display: block; }
-
-    /* ─── Primary Button ─────────────────────────────────────────────── */
-    .btn-primary {
-      width: 100%;
-      padding: 15px;
-      background: #ffffff;
-      color: #000000;
-      border: none;
-      border-radius: var(--r-lg);
-      font-size: 16px;
-      font-weight: 700;
-      font-family: var(--font);
-      letter-spacing: -0.2px;
-      cursor: pointer;
-      box-shadow: 0 4px 24px var(--accent-glow);
-      transition: transform var(--t), opacity var(--t), box-shadow var(--t);
-      -webkit-tap-highlight-color: transparent;
-      margin-top: 8px;
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: scale(0.97);
-      box-shadow: 0 2px 12px var(--accent-glow);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    /* ─── Config Status Card ─────────────────────────────────────────── */
     .status-card {
       background: var(--bg-2);
-      border-radius: var(--r-lg);
-      border: 0.5px solid var(--glass-border);
-      padding: 14px 16px;
+      border-radius: 12px;
+      border: 0.5px solid var(--glass-b);
+      padding: 13px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 24px;
     }
 
-    .status-card-text { flex: 1; }
     .status-card-title { font-size: 15px; font-weight: 600; }
     .status-card-sub   { font-size: 12px; color: var(--label-3); margin-top: 2px; }
 
     /* Token input */
     .token-wrap { position: relative; flex: 1; display: flex; }
-    .token-wrap input { flex: 1; }
+    .token-wrap .cell-input { padding-right: 36px; }
     .token-eye {
-      position: absolute;
-      right: 0; top: 50%;
+      position: absolute; right: 0; top: 50%;
       transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: var(--label-3);
-      cursor: pointer;
-      padding: 8px;
-      line-height: 0;
-    }
-
-    /* Section footnote */
-    .section-footnote {
-      font-size: 12px;
-      color: var(--label-3);
-      padding: 8px 4px 0;
-      line-height: 1.6;
-    }
-    .section-footnote code {
-      background: var(--fill-2);
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-size: 11px;
-      color: var(--accent);
+      background: none; border: none;
+      color: var(--label-3); cursor: pointer; padding: 8px; line-height: 0;
     }
 
     /* ─── Tab Bar — Floating Glass Pill ─────────────────────────────── */
@@ -473,17 +375,12 @@
       max-width: 340px;
       height: 60px;
       border-radius: 30px;
-
       background: rgba(30, 30, 36, 0.78);
       backdrop-filter: blur(32px) saturate(200%);
       -webkit-backdrop-filter: blur(32px) saturate(200%);
-
-      border: 0.5px solid rgba(255, 255, 255, 0.13);
-      box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.55),
-        0 4px 12px rgba(0, 0, 0, 0.30),
-        inset 0 0.5px 0 rgba(255, 255, 255, 0.10);
-
+      border: 0.5px solid rgba(255,255,255,0.13);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.30),
+                  inset 0 0.5px 0 rgba(255,255,255,0.10);
       display: flex;
       align-items: center;
       padding: 0 8px;
@@ -491,7 +388,6 @@
 
     .tab-btn {
       flex: 1;
-      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -501,48 +397,52 @@
       border-radius: 24px;
       background: none;
       border: none;
-      color: rgba(235, 235, 245, 0.38);
+      color: rgba(235,235,245,0.38);
       font-family: var(--font);
       font-size: 10px;
       font-weight: 500;
-      letter-spacing: 0.01em;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: color var(--t), background var(--t);
+      position: relative;
     }
 
     .tab-btn svg {
       width: 22px; height: 22px;
       stroke-width: 1.6;
-      transition: transform var(--t-spring), filter var(--t);
+      transition: transform var(--t-s), filter var(--t);
     }
 
-    .tab-btn.active {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.10);
+    .tab-btn.active { color: var(--label); background: rgba(255,255,255,0.10); }
+    .tab-btn.active svg { transform: scale(1.08); filter: drop-shadow(0 0 4px rgba(255,255,255,0.25)); }
+    .tab-btn:active:not(.active) { background: rgba(255,255,255,0.06); }
+
+    /* ─── Config badge ───────────────────────────────────────────────── */
+    .tab-icon-wrap { position: relative; display: inline-flex; }
+
+    .cfg-badge {
+      position: absolute;
+      top: -2px; right: -3px;
+      width: 7px; height: 7px;
+      background: var(--red);
+      border-radius: 50%;
+      border: 1.5px solid #1e1e24;
+      display: none;
     }
 
-    .tab-btn.active svg {
-      transform: scale(1.10);
-      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.30));
-    }
-
-    .tab-btn:active:not(.active) {
-      background: rgba(255, 255, 255, 0.06);
-    }
+    .cfg-badge.show { display: block; }
 
     /* ─── Spinner ────────────────────────────────────────────────────── */
     .spinner {
       display: inline-block;
-      width: 16px; height: 16px;
+      width: 14px; height: 14px;
       border: 2px solid rgba(0,0,0,0.25);
       border-top-color: #000;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       vertical-align: middle;
-      margin-right: 8px;
+      margin-right: 6px;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ─── Toast ──────────────────────────────────────────────────────── */
@@ -550,67 +450,36 @@
       position: fixed;
       bottom: calc(60px + var(--safe-bot) + 26px);
       left: 16px; right: 16px;
-      padding: 13px 16px;
-      border-radius: var(--r-lg);
+      padding: 12px 16px;
+      border-radius: 12px;
       font-size: 14px;
       font-weight: 600;
       z-index: 500;
       text-align: center;
       opacity: 0;
-      transform: translateY(10px) scale(0.97);
-      transition: opacity 0.22s ease, transform 0.22s ease;
+      transform: translateY(8px) scale(0.97);
+      transition: opacity 0.2s ease, transform 0.2s ease;
       pointer-events: none;
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-
-    .toast.success {
-      background: rgba(48, 209, 88, 0.18);
-      border: 0.5px solid rgba(48, 209, 88, 0.4);
-      color: var(--green);
-    }
-
-    .toast.error {
-      background: rgba(255, 69, 58, 0.18);
-      border: 0.5px solid rgba(255, 69, 58, 0.4);
-      color: var(--red);
-    }
-
-    /* ─── Section title in config ────────────────────────────────────── */
-    .panel-title {
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: var(--label);
-      margin-bottom: 24px;
-    }
+    .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+    .toast.success { background: rgba(48,209,88,0.15); border: 0.5px solid rgba(48,209,88,0.4); color: var(--green); }
+    .toast.error   { background: rgba(255,69,58,0.15);  border: 0.5px solid rgba(255,69,58,0.4);  color: var(--red); }
   </style>
 </head>
 <body>
 
-  <!-- ── Top Bar ───────────────────────────────────────────────── -->
-  <nav class="topbar glass">
-    <div class="topbar-content">
-      <span class="topbar-title" id="nav-title">Nova Nota</span>
-      <div class="topbar-status">
-        <div class="status-dot pending" id="status-dot"></div>
-        <span id="status-text">Conectando...</span>
-      </div>
-    </div>
-  </nav>
+  <div class="scroll-area" id="scroll-area">
 
-  <!-- ── Scroll Area ───────────────────────────────────────────── -->
-  <div class="scroll-area">
-
-    <!-- ── Panel: Nota ─────────────────────────────────────────── -->
+    <!-- ── NOTA ────────────────────────────────────────────────── -->
     <div class="panel active" id="panel-nota">
-      <div class="large-title" data-nav-title="Nova Nota">Nova Nota</div>
       <form id="form-nota" autocomplete="off">
+
+        <div class="sticky-header" id="header-nota">
+          <h1 class="large-title">Nova Nota</h1>
+          <button type="submit" class="save-btn" id="btn-nota">Salvar</button>
+        </div>
 
         <div class="section">
           <div class="section-label">Título</div>
@@ -619,30 +488,18 @@
               <input class="cell-input" type="text" id="nota-titulo"
                 placeholder="Ex: Reunião com Sonsino" required>
             </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-label">Data</div>
-          <div class="section-body">
-            <div class="cell">
-              <input class="cell-input" type="date" id="nota-data" required
-                style="color-scheme: dark;">
-            </div>
-          </div>
-        </div>
-
-        <div class="section chips-section">
-          <div class="section-label">Pessoas</div>
-          <div class="section-body">
-            <div class="chips-wrap" id="people-nota">
-              <span class="chips-empty">Carregando...</span>
+            <div class="cell cell-date">
+              <button type="button" class="date-chip" id="date-chip" onclick="openDatePicker()">
+                <span class="date-chip-icon">📅</span>
+                <span id="date-display">Hoje</span>
+              </button>
+              <input type="date" id="nota-data" class="date-input-hidden" required>
             </div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-label">Destino</div>
+          <div class="section-label">Categoria</div>
           <div class="section-body">
             <div class="cell">
               <select class="cell-select" id="nota-destino">
@@ -657,7 +514,7 @@
                 <option value="custom">Nova categoria...</option>
               </select>
               <svg class="cell-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" width="16" height="16">
+                stroke-width="1.6" stroke-linecap="round" width="16" height="16">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </div>
@@ -682,30 +539,16 @@
           </div>
         </div>
 
-        <button type="submit" class="btn-primary" id="btn-nota">
-          Salvar no Vault
-        </button>
-
       </form>
     </div>
 
-    <!-- ── Panel: Enviar ────────────────────────────────────────── -->
+    <!-- ── ANEXO ────────────────────────────────────────────────── -->
     <div class="panel" id="panel-pdf">
-      <div class="large-title" data-nav-title="Enviar Arquivo">Enviar Arquivo</div>
       <form id="form-pdf" autocomplete="off">
 
-        <div class="section">
-          <div class="section-label">Arquivo</div>
-          <div class="file-drop" id="file-drop"
-            onclick="document.getElementById('pdf-file').click()">
-            <input type="file" id="pdf-file"
-              accept=".pdf,.md,.txt,.png,.jpg,.jpeg"
-              onchange="onFileChange(this)">
-            <div class="file-drop-icon">📎</div>
-            <div class="file-drop-text">Toque para selecionar</div>
-            <div class="file-drop-hint">PDF, MD, TXT, imagem</div>
-            <div class="file-drop-name" id="file-name" style="display:none"></div>
-          </div>
+        <div class="sticky-header" id="header-pdf">
+          <h1 class="large-title">Anexo</h1>
+          <button type="submit" class="save-btn" id="btn-pdf">Enviar</button>
         </div>
 
         <div class="section">
@@ -718,26 +561,30 @@
           </div>
         </div>
 
-        <div class="section chips-section">
-          <div class="section-label">Pessoas relacionadas</div>
-          <div class="section-body">
-            <div class="chips-wrap" id="people-pdf">
-              <span class="chips-empty">Carregando...</span>
-            </div>
+        <div class="section">
+          <div class="section-label">Arquivo</div>
+          <div class="file-drop" id="file-drop"
+            onclick="document.getElementById('pdf-file').click()">
+            <input type="file" id="pdf-file"
+              accept=".pdf,.md,.txt,.png,.jpg,.jpeg"
+              onchange="onFileChange(this)">
+            <div class="file-drop-icon">📎</div>
+            <div class="file-drop-text">Toque para selecionar</div>
+            <div class="file-drop-hint">PDF, MD, TXT, imagem</div>
+            <div class="file-drop-name" id="file-name"></div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-label">Pasta de destino</div>
+          <div class="section-label">Categoria</div>
           <div class="section-body">
             <div class="cell">
-              <select class="cell-select" id="pdf-destino"
-                onchange="onPdfDestinoChange()">
+              <select class="cell-select" id="pdf-destino" onchange="onPdfDestinoChange()">
                 <option value="ANEXOS/Backups">Backups</option>
                 <option value="custom">Nova pasta em ANEXOS/...</option>
               </select>
               <svg class="cell-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" width="16" height="16">
+                stroke-width="1.6" stroke-linecap="round" width="16" height="16">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </div>
@@ -749,24 +596,23 @@
                   placeholder="Ex: Design System">
               </div>
             </div>
-            <div class="section-footnote">Será criada dentro de <code>ANEXOS/</code></div>
+            <div class="section-footnote">Dentro de <code>ANEXOS/</code></div>
           </div>
         </div>
-
-        <button type="submit" class="btn-primary" id="btn-pdf">
-          Enviar pro Vault
-        </button>
 
       </form>
     </div>
 
-    <!-- ── Panel: Config ────────────────────────────────────────── -->
+    <!-- ── CONFIG ───────────────────────────────────────────────── -->
     <div class="panel" id="panel-config">
-      <div class="large-title" data-nav-title="Configurações">Configurações</div>
+
+      <div class="sticky-header" id="header-config">
+        <h1 class="large-title">Configurações</h1>
+      </div>
 
       <div class="status-card">
-        <div class="status-dot pending" id="status-dot-config"></div>
-        <div class="status-card-text">
+        <div class="status-dot pending" id="status-dot"></div>
+        <div>
           <div class="status-card-title" id="status-card-title">Verificando...</div>
           <div class="status-card-sub">lftolotti/segundo-cerebro</div>
         </div>
@@ -778,11 +624,10 @@
           <div class="cell">
             <div class="token-wrap">
               <input class="cell-input" type="password" id="gh-token"
-                placeholder="ghp_..." autocomplete="off" spellcheck="false"
-                style="padding-right: 36px;">
+                placeholder="ghp_..." autocomplete="off" spellcheck="false">
               <button type="button" class="token-eye" onclick="toggleToken()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" width="18" height="18">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.6" stroke-linecap="round" width="18" height="18">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                   <circle cx="12" cy="12" r="3"/>
                 </svg>
@@ -795,85 +640,132 @@
         </div>
       </div>
 
-      <button type="button" class="btn-primary" onclick="saveToken()">
-        Salvar token
-      </button>
+      <div style="padding: 0 0 24px;">
+        <button type="button" onclick="saveToken()"
+          style="width:100%;padding:13px;background:#fff;color:#000;border:none;border-radius:12px;
+                 font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;">
+          Salvar token
+        </button>
+      </div>
 
-      <div class="section" style="margin-top: 32px;">
-        <div class="section-label">Como criar</div>
+      <div class="section">
+        <div class="section-label">Como criar o token</div>
         <div class="section-body">
-          <div class="cell" style="min-height: auto; padding: 14px 16px;">
-            <p class="section-footnote" style="padding: 0; color: var(--label-2); font-size: 13px;">
-              GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → New token<br><br>
-              Repositório: <code>lftolotti/segundo-cerebro</code><br>
-              Permissão: <code>Contents → Read and write</code>
+          <div class="cell" style="min-height:auto;padding:14px;">
+            <p style="font-size:13px;color:var(--label-2);line-height:1.7;">
+              GitHub → Settings → Developer settings →
+              Personal access tokens → Fine-grained tokens → New token<br><br>
+              Repositório: <code style="background:var(--fill-2);padding:1px 5px;border-radius:4px;font-size:11px;">lftolotti/segundo-cerebro</code><br>
+              Permissão: <code style="background:var(--fill-2);padding:1px 5px;border-radius:4px;font-size:11px;">Contents → Read and write</code>
             </p>
           </div>
         </div>
       </div>
 
     </div>
-
   </div><!-- /scroll-area -->
 
   <!-- ── Tab Bar ───────────────────────────────────────────────── -->
-  <nav class="tabbar glass">
+  <nav class="tabbar">
     <button class="tab-btn active" id="tab-nota" onclick="switchTab('nota')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
         <line x1="16" y1="13" x2="8" y2="13"/>
         <line x1="16" y1="17" x2="8" y2="17"/>
-        <polyline points="10 9 9 9 8 9"/>
+        <line x1="10" y1="9" x2="8" y2="9"/>
       </svg>
       Nota
     </button>
+
     <button class="tab-btn" id="tab-pdf" onclick="switchTab('pdf')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="17 8 12 3 7 8"/>
         <line x1="12" y1="3" x2="12" y2="15"/>
       </svg>
-      Enviar
+      Anexo
     </button>
+
     <button class="tab-btn" id="tab-config" onclick="switchTab('config')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-      </svg>
+      <div class="tab-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span class="cfg-badge" id="cfg-badge"></span>
+      </div>
       Config
     </button>
   </nav>
 
-  <!-- ── Toast ─────────────────────────────────────────────────── -->
   <div class="toast" id="toast"></div>
 
   <script>
-    // ── Constants ────────────────────────────────────────────────────
     const REPO     = 'lftolotti/segundo-cerebro';
     const API_BASE = 'https://api.github.com';
 
-    // ── State ────────────────────────────────────────────────────────
-    let peopleList   = [];
-    let selNota      = new Set();
-    let selPdf       = new Set();
-    let currentFile  = null;
+    let currentFile = null;
+    const TAB_ORDER = ['nota', 'pdf', 'config'];
+    let currentTab  = 'nota';
 
     // ── Init ─────────────────────────────────────────────────────────
     async function init() {
-      document.getElementById('nota-data').value = today();
+      initDateChip();
+      initScrollBehavior();
+
       const tok = localStorage.getItem('gh_token');
       if (tok) {
         document.getElementById('gh-token').value = tok;
         await checkConnection();
-        await Promise.all([loadPeople(), loadPdfFolders()]);
+        await loadPdfFolders();
       } else {
         setStatus('err', 'Token não configurado');
-        setPeopleMsg('Configure o token em Config');
       }
+    }
+
+    // ── Date chip ────────────────────────────────────────────────────
+    function initDateChip() {
+      const input   = document.getElementById('nota-data');
+      const display = document.getElementById('date-display');
+      const today   = new Date().toISOString().split('T')[0];
+      input.value   = today;
+      display.textContent = formatDate(today);
+
+      input.addEventListener('change', () => {
+        display.textContent = formatDate(input.value);
+      });
+    }
+
+    function openDatePicker() {
+      const input = document.getElementById('nota-data');
+      try { input.showPicker(); } catch { input.click(); }
+    }
+
+    function formatDate(val) {
+      if (!val) return 'Hoje';
+      const d = new Date(val + 'T12:00:00');
+      const today = new Date();
+      today.setHours(12,0,0,0);
+      if (d.getTime() === today.getTime()) return 'Hoje';
+      return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+    }
+
+    // ── Scroll — compact header ───────────────────────────────────────
+    function initScrollBehavior() {
+      const scrollArea = document.getElementById('scroll-area');
+      scrollArea.addEventListener('scroll', () => {
+        const panel = document.querySelector('.panel.active');
+        if (!panel) return;
+        const headerId = panel.id.replace('panel-', 'header-');
+        const header   = document.getElementById(headerId);
+        if (!header) return;
+        const scrolled = scrollArea.scrollTop > 56;
+        header.classList.toggle('compact', scrolled);
+      }, { passive: true });
     }
 
     // ── GitHub API ───────────────────────────────────────────────────
@@ -881,44 +773,26 @@
 
     async function ghGet(path) {
       const r = await fetch(`${API_BASE}${path}`, {
-        headers: {
-          Authorization: `token ${token()}`,
-          Accept: 'application/vnd.github.v3+json'
-        }
+        headers: { Authorization: `token ${token()}`, Accept: 'application/vnd.github.v3+json' }
       });
-      if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.message || `HTTP ${r.status}`); }
+      if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.message||`HTTP ${r.status}`); }
       return r.json();
     }
 
     async function ghPut(path, body) {
       const r = await fetch(`${API_BASE}${path}`, {
         method: 'PUT',
-        headers: {
-          Authorization: `token ${token()}`,
-          Accept: 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
+        headers: { Authorization: `token ${token()}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-      if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.message || `HTTP ${r.status}`); }
+      if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.message||`HTTP ${r.status}`); }
       return r.json();
     }
 
-    function enc(path) {
-      return path.split('/').map(encodeURIComponent).join('/');
-    }
-
-    function toB64(str) {
-      return btoa(unescape(encodeURIComponent(str)));
-    }
-
-    function today() {
-      return new Date().toISOString().split('T')[0];
-    }
-
-    function sanitize(name) {
-      return name.replace(/[/\\?%*:|"<>]/g, '-').trim();
-    }
+    function enc(path) { return path.split('/').map(encodeURIComponent).join('/'); }
+    function toB64(str) { return btoa(unescape(encodeURIComponent(str))); }
+    function sanitize(n) { return n.replace(/[/\\?%*:|"<>]/g,'-').trim(); }
+    function today() { return new Date().toISOString().split('T')[0]; }
 
     // ── Connection ───────────────────────────────────────────────────
     async function checkConnection() {
@@ -926,20 +800,15 @@
       try {
         await ghGet(`/repos/${REPO}`);
         setStatus('ok', 'Conectado');
-      } catch (e) {
+      } catch {
         setStatus('err', 'Falha na autenticação');
       }
     }
 
     function setStatus(state, text) {
-      ['status-dot', 'status-dot-config'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.className = `status-dot ${state}`;
-      });
-      const t = document.getElementById('status-text');
-      if (t) t.textContent = text;
-      const ct = document.getElementById('status-card-title');
-      if (ct) ct.textContent = text;
+      document.getElementById('status-dot').className       = `status-dot ${state}`;
+      document.getElementById('status-card-title').textContent = text;
+      document.getElementById('cfg-badge').classList.toggle('show', state === 'err');
     }
 
     // ── Token ────────────────────────────────────────────────────────
@@ -948,7 +817,7 @@
       if (!val) return showToast('Digite um token', 'error');
       localStorage.setItem('gh_token', val);
       showToast('Token salvo!', 'success');
-      checkConnection().then(() => Promise.all([loadPeople(), loadPdfFolders()]));
+      checkConnection().then(() => loadPdfFolders());
     }
 
     function toggleToken() {
@@ -956,52 +825,11 @@
       el.type = el.type === 'password' ? 'text' : 'password';
     }
 
-    // ── People ───────────────────────────────────────────────────────
-    async function loadPeople() {
-      try {
-        const files = await ghGet(`/repos/${REPO}/contents/PESSOAS`);
-        peopleList = files
-          .filter(f => f.type === 'file' && f.name.endsWith('.md') && !f.name.startsWith('Exemplo'))
-          .map(f => f.name.replace('.md', ''))
-          .sort((a, b) => a.localeCompare(b, 'pt'));
-        renderChips('people-nota', 'nota');
-        renderChips('people-pdf', 'pdf');
-      } catch {
-        setPeopleMsg('Erro ao carregar pessoas');
-      }
-    }
-
-    function renderChips(containerId, tab) {
-      const el = document.getElementById(containerId);
-      const sel = tab === 'nota' ? selNota : selPdf;
-      if (!peopleList.length) {
-        el.innerHTML = '<span class="chips-empty">Nenhuma pessoa encontrada</span>';
-        return;
-      }
-      el.innerHTML = peopleList.map(name => {
-        const safe = name.replace(/'/g, "\\'");
-        return `<div class="chip${sel.has(name) ? ' selected' : ''}" onclick="togglePerson('${safe}','${tab}')">${name}</div>`;
-      }).join('');
-    }
-
-    function togglePerson(name, tab) {
-      haptic(6);
-      const sel = tab === 'nota' ? selNota : selPdf;
-      sel.has(name) ? sel.delete(name) : sel.add(name);
-      renderChips(`people-${tab}`, tab);
-    }
-
-    function setPeopleMsg(msg) {
-      ['people-nota', 'people-pdf'].forEach(id => {
-        document.getElementById(id).innerHTML = `<span class="chips-empty">${msg}</span>`;
-      });
-    }
-
     // ── PDF Folders ──────────────────────────────────────────────────
     async function loadPdfFolders() {
       try {
         const files = await ghGet(`/repos/${REPO}/contents/ANEXOS`);
-        const dirs = files.filter(f => f.type === 'dir').map(f => f.name).sort();
+        const dirs  = files.filter(f => f.type === 'dir').map(f => f.name).sort();
         if (!dirs.length) return;
         const sel = document.getElementById('pdf-destino');
         sel.innerHTML = dirs.map(d => `<option value="ANEXOS/${d}">${d}</option>`).join('') +
@@ -1014,7 +842,7 @@
       document.getElementById('pdf-custom-wrap').classList.toggle('show', v === 'custom');
     }
 
-    // ── File Input ───────────────────────────────────────────────────
+    // ── File input ───────────────────────────────────────────────────
     function onFileChange(input) {
       if (!input.files?.length) return;
       currentFile = input.files[0];
@@ -1023,111 +851,76 @@
       nameEl.style.display = 'block';
       document.getElementById('file-drop').classList.add('has-file');
       if (!document.getElementById('pdf-titulo').value)
-        document.getElementById('pdf-titulo').value = currentFile.name.replace(/\.[^.]+$/, '');
+        document.getElementById('pdf-titulo').value = currentFile.name.replace(/\.[^.]+$/,'');
     }
 
-    // ── Nota Submit ──────────────────────────────────────────────────
+    // ── Submit: Nota ─────────────────────────────────────────────────
     document.getElementById('form-nota').addEventListener('submit', async e => {
       e.preventDefault();
       if (!token()) return showToast('Configure o token primeiro', 'error');
-
       const btn = document.getElementById('btn-nota');
       setBtnLoading(btn, 'Salvando...');
-
       try {
         const titulo   = document.getElementById('nota-titulo').value.trim();
         const data     = document.getElementById('nota-data').value;
         const conteudo = document.getElementById('nota-conteudo').value.trim();
         const destSel  = document.getElementById('nota-destino').value;
-        const destino  = destSel === 'custom'
-          ? document.getElementById('nota-custom').value.trim()
-          : destSel;
+        const destino  = destSel === 'custom' ? document.getElementById('nota-custom').value.trim() : destSel;
+        if (!destino) return showToast('Informe a categoria', 'error');
 
-        if (!destino) return showToast('Informe a pasta de destino', 'error');
-
-        const pessoas = [...selNota];
-        const pessoasYaml = pessoas.length
-          ? '\npessoas:\n' + pessoas.map(p => `  - "[[${p}]]"`).join('\n')
-          : '';
-
-        const md = `---\ndata: ${data}${pessoasYaml}\ndestino: ${destino}\ntipo: nota\n---\n\n# ${titulo}\n\n${conteudo}`;
-        const path = `${destino}/${data} - ${sanitize(titulo)}.md`;
-
-        await ghPut(`/repos/${REPO}/contents/${enc(path)}`, {
-          message: `📝 ${titulo}`,
-          content: toB64(md)
+        const md = `---\ndata: ${data}\ndestino: ${destino}\ntipo: nota\n---\n\n# ${titulo}\n\n${conteudo}`;
+        await ghPut(`/repos/${REPO}/contents/${enc(`${destino}/${data} - ${sanitize(titulo)}.md`)}`, {
+          message: `📝 ${titulo}`, content: toB64(md)
         });
 
         showToast('Nota salva! ✓', 'success');
-        document.getElementById('nota-titulo').value = '';
+        document.getElementById('nota-titulo').value  = '';
         document.getElementById('nota-conteudo').value = '';
-        selNota.clear();
-        renderChips('people-nota', 'nota');
-
       } catch (err) {
         showToast('Erro: ' + err.message, 'error');
       } finally {
-        setBtnReady(btn, 'Salvar no Vault');
+        setBtnReady(btn, 'Salvar');
       }
     });
 
-    // ── PDF Submit ───────────────────────────────────────────────────
+    // ── Submit: Anexo ────────────────────────────────────────────────
     document.getElementById('form-pdf').addEventListener('submit', async e => {
       e.preventDefault();
-      if (!token()) return showToast('Configure o token primeiro', 'error');
+      if (!token())      return showToast('Configure o token primeiro', 'error');
       if (!currentFile)  return showToast('Selecione um arquivo', 'error');
-
       const btn = document.getElementById('btn-pdf');
       setBtnLoading(btn, 'Enviando...');
-
       try {
         const titulo  = document.getElementById('pdf-titulo').value.trim();
         const destSel = document.getElementById('pdf-destino').value;
         const destino = destSel === 'custom'
           ? 'ANEXOS/' + document.getElementById('pdf-custom').value.trim()
           : destSel;
-
-        if (!destino || destino === 'ANEXOS/') return showToast('Informe a pasta', 'error');
+        if (!destino || destino === 'ANEXOS/') return showToast('Informe a categoria', 'error');
 
         const ext      = currentFile.name.split('.').pop();
         const safeName = sanitize(titulo);
-        const path     = `${destino}/${safeName}.${ext}`;
-
-        const b64 = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload  = () => resolve(reader.result.split(',')[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(currentFile);
+        const b64      = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload  = () => res(r.result.split(',')[1]);
+          r.onerror = rej;
+          r.readAsDataURL(currentFile);
         });
 
-        await ghPut(`/repos/${REPO}/contents/${enc(path)}`, {
-          message: `📎 ${titulo}`,
-          content: b64
+        await ghPut(`/repos/${REPO}/contents/${enc(`${destino}/${safeName}.${ext}`)}`, {
+          message: `📎 ${titulo}`, content: b64
         });
-
-        const pessoas = [...selPdf];
-        if (pessoas.length) {
-          const pessoasYaml = '\npessoas:\n' + pessoas.map(p => `  - "[[${p}]]"`).join('\n');
-          const noteMd = `---\ndata: ${today()}${pessoasYaml}\ntipo: arquivo\n---\n\n# ${titulo}\n\nArquivo: \`${safeName}.${ext}\`\n`;
-          await ghPut(`/repos/${REPO}/contents/${enc(`${destino}/${safeName}.md`)}`, {
-            message: `📎 nota: ${titulo}`,
-            content: toB64(noteMd)
-          }).catch(() => {});
-        }
 
         showToast('Arquivo enviado! ✓', 'success');
         currentFile = null;
-        document.getElementById('pdf-file').value = '';
-        document.getElementById('pdf-titulo').value = '';
+        document.getElementById('pdf-file').value    = '';
+        document.getElementById('pdf-titulo').value  = '';
         document.getElementById('file-name').style.display = 'none';
         document.getElementById('file-drop').classList.remove('has-file');
-        selPdf.clear();
-        renderChips('people-pdf', 'pdf');
-
       } catch (err) {
         showToast('Erro: ' + err.message, 'error');
       } finally {
-        setBtnReady(btn, 'Enviar pro Vault');
+        setBtnReady(btn, 'Enviar');
       }
     });
 
@@ -1136,89 +929,48 @@
       document.getElementById('nota-custom-wrap').classList.toggle('show', this.value === 'custom');
     });
 
-    // ── Tab switching — with slide direction ─────────────────────────
-    const TAB_ORDER = ['nota', 'pdf', 'config'];
-    let currentTab = 'nota';
-
+    // ── Tab switching ────────────────────────────────────────────────
     function switchTab(tab) {
       if (tab === currentTab) return;
       haptic(8);
-
       const fromIdx = TAB_ORDER.indexOf(currentTab);
       const toIdx   = TAB_ORDER.indexOf(tab);
       const dir     = toIdx > fromIdx ? 'slide-left' : 'slide-right';
 
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active', 'slide-left', 'slide-right'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active','slide-left','slide-right'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
       const panel = document.getElementById(`panel-${tab}`);
       panel.classList.add('active', dir);
       document.getElementById(`tab-${tab}`).classList.add('active');
-
       currentTab = tab;
-      document.querySelector('.scroll-area').scrollTop = 0;
-
-      // Update nav title
-      const largeTitle = panel.querySelector('.large-title');
-      const navTitle   = document.getElementById('nav-title');
-      if (largeTitle && navTitle) {
-        navTitle.textContent = largeTitle.dataset.navTitle || '';
-        navTitle.classList.remove('visible');
-      }
-    }
-
-    // ── Large title scroll collapse ──────────────────────────────────
-    function initScrollCollapse() {
-      const scrollArea = document.querySelector('.scroll-area');
-      const topbar     = document.querySelector('.topbar');
-      const navTitle   = document.getElementById('nav-title');
-
-      scrollArea.addEventListener('scroll', () => {
-        const activePanel = document.querySelector('.panel.active');
-        const largeTitle  = activePanel?.querySelector('.large-title');
-        if (!largeTitle) return;
-
-        const titleBottom = largeTitle.getBoundingClientRect().bottom;
-        const navBottom   = topbar.getBoundingClientRect().bottom;
-        const collapsed   = titleBottom <= navBottom;
-
-        navTitle.classList.toggle('visible', collapsed);
-        topbar.classList.toggle('scrolled', scrollArea.scrollTop > 4);
-      }, { passive: true });
-    }
-
-    // ── Haptic feedback ──────────────────────────────────────────────
-    function haptic(ms = 10) {
-      if (navigator.vibrate) navigator.vibrate(ms);
+      document.getElementById('scroll-area').scrollTop = 0;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
-    let _toastT;
-    function showToast(msg, type = 'success') {
+    function haptic(ms=10) { if (navigator.vibrate) navigator.vibrate(ms); }
+
+    let _tt;
+    function showToast(msg, type='success') {
       const el = document.getElementById('toast');
       el.textContent = msg;
       el.className = `toast ${type} show`;
-      clearTimeout(_toastT);
-      _toastT = setTimeout(() => el.classList.remove('show'), 3200);
+      clearTimeout(_tt);
+      _tt = setTimeout(() => el.classList.remove('show'), 3200);
     }
 
     function setBtnLoading(btn, label) {
       btn.disabled = true;
       btn.innerHTML = `<span class="spinner"></span>${label}`;
     }
-
     function setBtnReady(btn, label) {
       btn.disabled = false;
       btn.textContent = label;
     }
 
-    // ── Service Worker ───────────────────────────────────────────────
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
     init();
-    initScrollCollapse();
   </script>
 </body>
 </html>
