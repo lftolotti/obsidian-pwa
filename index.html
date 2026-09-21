@@ -537,8 +537,17 @@
           <div class="section-body">
             <div class="cell">
               <select class="cell-select" id="pdf-destino" onchange="onPdfDestinoChange()">
-                <option value="ANEXOS/Backups">Backups</option>
-                <option value="custom">Nova pasta em ANEXOS/...</option>
+                <option value="ANEXOS">ANEXOS</option>
+                <option value="APRENDIZADOS">APRENDIZADOS</option>
+                <option value="AREAS">AREAS</option>
+                <option value="CARREIRA">CARREIRA</option>
+                <option value="CONTEUDOS">CONTEUDOS</option>
+                <option value="NOTAS">NOTAS</option>
+                <option value="PROJETOS">PROJETOS</option>
+                <option value="REFERENCIAS">REFERENCIAS</option>
+                <option value="REUNIOES">REUNIOES</option>
+                <option value="SEMANAL">SEMANAL</option>
+                <option value="custom">Nova categoria...</option>
               </select>
               <svg class="cell-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="1.6" stroke-linecap="round" width="16" height="16">
@@ -701,7 +710,6 @@
       if (tok) {
         document.getElementById('gh-token').value = tok;
         await checkConnection();
-        await loadPdfFolders();
       } else {
         setStatus('err', 'Token não configurado');
       }
@@ -790,17 +798,6 @@
       el.type = el.type === 'password' ? 'text' : 'password';
     }
 
-    // ── PDF Folders ──────────────────────────────────────────────────
-    async function loadPdfFolders() {
-      try {
-        const files = await ghGet(`/repos/${REPO}/contents/ANEXOS`);
-        const dirs  = files.filter(f => f.type === 'dir').map(f => f.name).sort();
-        if (!dirs.length) return;
-        const sel = document.getElementById('pdf-destino');
-        sel.innerHTML = dirs.map(d => `<option value="ANEXOS/${d}">${d}</option>`).join('') +
-          '<option value="custom">Nova pasta em ANEXOS/...</option>';
-      } catch {}
-    }
 
     function onPdfDestinoChange() {
       const v = document.getElementById('pdf-destino').value;
