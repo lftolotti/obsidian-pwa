@@ -1581,39 +1581,30 @@
       return r.json();
     }
 
-    // PUT com resolução automática de conflito SHA
-    async function ghPutSafe(path, body) {
+    // PUT com resolução automática de conflito SHA (recebe filePath sem prefixo API)
+    async function ghPutFile(filePath, body) {
+      const apiPath = `/repos/${REPO}/contents/${enc(filePath)}`;
       try {
-        return await ghPut(path, body);
+        return await ghPut(apiPath, body);
       } catch (e) {
-        if (e.message.includes('sha') || e.message.includes('SHA') || e.message.includes('422')) {
-          const existing = await ghGet(`/repos/${REPO}/contents/${enc(path)}`);
-          return await ghPut(path, { ...body, sha: existing.sha });
+        // Arquivo já existe — pega o SHA e reenvia
+        if (e.message.toLowerCase().includes('sha') || e.message.includes('422')) {
+          const existing = await ghGet(`/repos/${REPO}/contents/${enc(filePath)}`);
+          return await ghPut(apiPath, { ...body, sha: existing.sha });
         }
         throw e;
       }
     }
 
-    // Gera path único adicionando _2, _3... se arquivo já existe
-    async function uniquePath(destino, safeName, ext) {
-      let path = `${destino}/${safeName}.${ext}`;
-      try {
-        await ghGet(`/repos/${REPO}/contents/${enc(path)}`);
-        // Arquivo existe — adiciona sufixo
-        let i = 2;
-        while (true) {
-          path = `${destino}/${safeName}_${i}.${ext}`;
-          try {
-            await ghGet(`/repos/${REPO}/contents/${enc(path)}`);
-            i++;
-          } catch {
-            break; // path livre
-          }
-        }
-      } catch {
-        // path livre, usa o original
-      }
-      return path;
+    // Gera nome único dentro do batch atual (sem chamada de API)
+    function uniqueName(baseName, ext, usedSet) {
+      let candidate = `${baseName}.${ext}`;
+      if (!usedSet.has(candidate)) { usedSet.add(candidate); return candidate; }
+      let i = 2;
+      while (usedSet.has(`${baseName}_${i}.${ext}`)) i++;
+      candidate = `${baseName}_${i}.${ext}`;
+      usedSet.add(candidate);
+      return candidate;
     }
 
     function enc(path) { return path.split('/').map(encodeURIComponent).join('/'); }
@@ -1861,15 +1852,17 @@
         const data      = document.getElementById('pdf-data').value;
 
         // Envia todos os arquivos
+        const usedNames = new Set();
         for (let i = 0; i < currentFiles.length; i++) {
           const file = currentFiles[i];
           setBtnLoading(btn, currentFiles.length > 1 ? `Enviando ${i+1}/${currentFiles.length}...` : 'Enviando...');
 
-          const ext      = file.name.split('.').pop();
-          const baseName = currentFiles.length === 1
-            ? sanitize(titulo || file.name.replace(/\.[^.]+$/, ''))
+          const ext      = file.name.split('.').pop().toLowerCase();
+          const rawName  = currentFiles.length === 1 && titulo
+            ? sanitize(titulo)
             : sanitize(file.name.replace(/\.[^.]+$/, ''));
-          const path     = await uniquePath(destino, baseName, ext);
+          const fileName = uniqueName(rawName, ext, usedNames);
+          const filePath = `${destino}/${fileName}`;
 
           const b64 = await new Promise((res, rej) => {
             const r = new FileReader();
@@ -1878,8 +1871,8 @@
             r.readAsDataURL(file);
           });
 
-          await ghPutSafe(`/repos/${REPO}/contents/${enc(path)}`, {
-            message: `📎 ${baseName}`, content: b64
+          await ghPutFile(filePath, {
+            message: `📎 ${fileName}`, content: b64
           });
         }
 
