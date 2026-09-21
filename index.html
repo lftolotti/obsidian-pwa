@@ -55,12 +55,32 @@
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      overflow-x: hidden;
+      overflow-x: clip;
       -webkit-overflow-scrolling: touch;
       padding-top: 0;
       padding-bottom: calc(60px + var(--safe-bot) + 40px);
       padding-left: 16px;
       padding-right: 16px;
+    }
+
+    /* ─── Home top row ───────────────────────────────────────────────── */
+    .home-toprow {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding-top: calc(var(--safe-top) + 16px);
+      padding-bottom: 20px;
+    }
+
+    .refresh-btn {
+      background: none;
+      border: none;
+      color: var(--label-3);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px 0;
+      margin-top: 6px;
+      -webkit-tap-highlight-color: transparent;
     }
 
     /* ─── Panels ─────────────────────────────────────────────────────── */
@@ -679,11 +699,10 @@
 
     <!-- ── HOME ────────────────────────────────────────────────── -->
     <div class="panel active" id="panel-home">
-      <div class="sticky-header" id="header-home">
+      <div class="home-toprow">
         <h1 class="large-title">Home</h1>
-        <button onclick="loadHome(true)" style="background:none;border:none;color:var(--label-3);font-size:22px;cursor:pointer;padding:8px 0;margin-top:4px;">↻</button>
+        <button onclick="loadHome(true)" class="refresh-btn">↻</button>
       </div>
-
       <div id="home-lembretes"></div>
       <div id="home-projetos"></div>
       <div id="home-pessoas"></div>
