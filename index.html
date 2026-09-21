@@ -57,7 +57,7 @@
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding-top: calc(var(--safe-top) + 20px);
+      padding-top: 0;
       padding-bottom: calc(60px + var(--safe-bot) + 40px);
       padding-left: 16px;
       padding-right: 16px;
@@ -75,13 +75,14 @@
     /* ─── Sticky Header (Large Title + Save Btn) ─────────────────────── */
     .sticky-header {
       position: sticky;
-      top: calc(var(--safe-top) + 4px);
+      top: 0;
       z-index: 50;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
-      padding: 8px 0 20px;
+      padding-top: calc(var(--safe-top) + 16px);
+      padding-bottom: 20px;
       background: var(--bg);
     }
 
