@@ -996,10 +996,11 @@
             onclick="document.getElementById('pdf-file').click()">
             <input type="file" id="pdf-file"
               accept=".pdf,.md,.txt,.png,.jpg,.jpeg"
+              multiple
               onchange="onFileChange(this)">
             <div class="file-drop-icon">📎</div>
             <div class="file-drop-text">Toque para selecionar</div>
-            <div class="file-drop-hint">PDF, MD, TXT, imagem</div>
+            <div class="file-drop-hint">PDF, MD, TXT, imagem — múltiplos arquivos</div>
             <div class="file-drop-name" id="file-name"></div>
           </div>
         </div>
@@ -1118,7 +1119,7 @@
     const REPO     = 'lftolotti/segundo-cerebro';
     const API_BASE = 'https://api.github.com';
 
-    let currentFile = null;
+    let currentFiles = [];
     const TAB_ORDER = ['home', 'nota', 'pdf', 'config'];
     let currentTab  = 'home';
     let peopleData  = [];
@@ -1509,13 +1510,17 @@
     // ── File input ───────────────────────────────────────────────────
     function onFileChange(input) {
       if (!input.files?.length) return;
-      currentFile = input.files[0];
+      currentFiles = Array.from(input.files);
       const nameEl = document.getElementById('file-name');
-      nameEl.textContent = currentFile.name;
+      if (currentFiles.length === 1) {
+        nameEl.textContent = currentFiles[0].name;
+        if (!document.getElementById('pdf-titulo').value)
+          document.getElementById('pdf-titulo').value = currentFiles[0].name.replace(/\.[^.]+$/,'');
+      } else {
+        nameEl.textContent = `${currentFiles.length} arquivos selecionados`;
+      }
       nameEl.style.display = 'block';
       document.getElementById('file-drop').classList.add('has-file');
-      if (!document.getElementById('pdf-titulo').value)
-        document.getElementById('pdf-titulo').value = currentFile.name.replace(/\.[^.]+$/,'');
     }
 
     // ── Submit: Nota ─────────────────────────────────────────────────
@@ -1550,8 +1555,8 @@
     // ── Submit: Anexo ────────────────────────────────────────────────
     document.getElementById('form-pdf').addEventListener('submit', async e => {
       e.preventDefault();
-      if (!token())      return showToast('Configure o token primeiro', 'error');
-      if (!currentFile)  return showToast('Selecione um arquivo', 'error');
+      if (!token())             return showToast('Configure o token primeiro', 'error');
+      if (!currentFiles.length) return showToast('Selecione ao menos um arquivo', 'error');
       const btn = document.getElementById('btn-pdf');
       setBtnLoading(btn, 'Enviando...');
       try {
@@ -1562,29 +1567,45 @@
           : destSel;
         if (!destino || destino === 'ANEXOS/') return showToast('Informe a categoria', 'error');
 
-        const ext        = currentFile.name.split('.').pop();
-        const safeName   = sanitize(titulo);
-        const anotacoes  = document.getElementById('pdf-anotacoes').value.trim();
-        const data       = document.getElementById('pdf-data').value;
-        const b64        = await new Promise((res, rej) => {
-          const r = new FileReader();
-          r.onload  = () => res(r.result.split(',')[1]);
-          r.onerror = rej;
-          r.readAsDataURL(currentFile);
-        });
+        const anotacoes = document.getElementById('pdf-anotacoes').value.trim();
+        const data      = document.getElementById('pdf-data').value;
 
-        await ghPut(`/repos/${REPO}/contents/${enc(`${destino}/${safeName}.${ext}`)}`, {
-          message: `📎 ${titulo}`, content: b64
-        });
+        // Envia todos os arquivos
+        for (let i = 0; i < currentFiles.length; i++) {
+          const file = currentFiles[i];
+          setBtnLoading(btn, currentFiles.length > 1 ? `Enviando ${i+1}/${currentFiles.length}...` : 'Enviando...');
 
-        // Companion .md com anotações
-        const noteMd = `---\ndata: ${data}\ntipo: arquivo\n---\n\n# ${titulo}\n\nArquivo: \`${safeName}.${ext}\`\n${anotacoes ? '\n## Anotações\n\n' + anotacoes : ''}`;
-        await ghPut(`/repos/${REPO}/contents/${enc(`${destino}/${safeName}.md`)}`, {
-          message: `📎 nota: ${titulo}`, content: toB64(noteMd)
-        }).catch(() => {});
+          const ext      = file.name.split('.').pop();
+          const baseName = currentFiles.length === 1
+            ? sanitize(titulo)
+            : sanitize(file.name.replace(/\.[^.]+$/, ''));
+          const path     = `${destino}/${baseName}.${ext}`;
 
-        showToast('Arquivo enviado! ✓', 'success');
-        currentFile = null;
+          const b64 = await new Promise((res, rej) => {
+            const r = new FileReader();
+            r.onload  = () => res(r.result.split(',')[1]);
+            r.onerror = rej;
+            r.readAsDataURL(file);
+          });
+
+          await ghPut(`/repos/${REPO}/contents/${enc(path)}`, {
+            message: `📎 ${baseName}`, content: b64
+          });
+        }
+
+        // Companion .md com anotações (apenas se houver anotações ou for arquivo único com título)
+        if (anotacoes || (currentFiles.length === 1 && titulo)) {
+          const safeName = sanitize(titulo || currentFiles[0].name.replace(/\.[^.]+$/, ''));
+          const ext      = currentFiles[0].name.split('.').pop();
+          const noteMd   = `---\ndata: ${data}\ntipo: arquivo\n---\n\n# ${titulo || safeName}\n\nArquivo: \`${safeName}.${ext}\`\n${anotacoes ? '\n## Anotações\n\n' + anotacoes : ''}`;
+          await ghPut(`/repos/${REPO}/contents/${enc(`${destino}/${safeName}.md`)}`, {
+            message: `📎 nota: ${titulo || safeName}`, content: toB64(noteMd)
+          }).catch(() => {});
+        }
+
+        const plural = currentFiles.length > 1 ? `${currentFiles.length} arquivos enviados` : 'Arquivo enviado';
+        showToast(`${plural}! ✓`, 'success');
+        currentFiles = [];
         document.getElementById('pdf-file').value      = '';
         document.getElementById('pdf-titulo').value    = '';
         document.getElementById('pdf-anotacoes').value = '';
