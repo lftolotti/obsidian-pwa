@@ -8,437 +8,764 @@
   <meta name="apple-mobile-web-app-title" content="Cérebro">
   <title>Segundo Cérebro</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e1e2e">
+  <meta name="theme-color" content="#000000">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    /* ─── Design Tokens ─────────────────────────────────────────────── */
     :root {
-      --base:     #1e1e2e;
-      --surface0: #313244;
-      --surface1: #45475a;
-      --surface2: #585b70;
-      --text:     #cdd6f4;
-      --subtext:  #a6adc8;
-      --muted:    #6c7086;
-      --purple:   #cba6f7;
-      --blue:     #89b4fa;
-      --green:    #a6e3a1;
-      --red:      #f38ba8;
-      --yellow:   #f9e2af;
+      --bg:           #000000;
+      --bg-2:         #1c1c1e;
+      --bg-3:         #2c2c2e;
+      --bg-4:         #3a3a3c;
+
+      --glass:        rgba(28, 28, 30, 0.82);
+      --glass-strong: rgba(18, 18, 20, 0.92);
+      --glass-card:   rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-sep:    rgba(84, 84, 88, 0.55);
+
+      --label:        #ffffff;
+      --label-2:      rgba(235, 235, 245, 0.60);
+      --label-3:      rgba(235, 235, 245, 0.30);
+      --label-4:      rgba(235, 235, 245, 0.14);
+
+      --fill:         rgba(120, 120, 128, 0.30);
+      --fill-2:       rgba(120, 120, 128, 0.22);
+
+      --accent:       #a855f7;
+      --accent-dark:  #7c3aed;
+      --accent-soft:  rgba(168, 85, 247, 0.18);
+      --accent-glow:  rgba(168, 85, 247, 0.35);
+
+      --green:        #30d158;
+      --green-soft:   rgba(48, 209, 88, 0.14);
+      --red:          #ff453a;
+      --red-soft:     rgba(255, 69, 58, 0.14);
+      --yellow:       #ffd60a;
+
+      --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
+      --font-rounded: 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+      --topbar-h: 56px;
+      --tabbar-h: 50px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-xl: 20px;
+
+      --t:        180ms cubic-bezier(0.4, 0, 0.2, 1);
+      --t-spring: 420ms cubic-bezier(0.34, 1.46, 0.64, 1);
+      --t-slow:   320ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ─── Reset ─────────────────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     body {
-      background: var(--base);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--label);
+      font-family: var(--font);
       min-height: 100dvh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
-    /* ── Header ─────────────────────────────────────────── */
-    .header {
-      padding: max(20px, env(safe-area-inset-top)) 20px 14px;
-      background: var(--base);
-      border-bottom: 1px solid var(--surface0);
+    /* ─── Glass Mixin ────────────────────────────────────────────────── */
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+    }
+
+    /* ─── Top Bar ────────────────────────────────────────────────────── */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      height: calc(var(--topbar-h) + var(--safe-top));
+      padding-top: var(--safe-top);
+      border-bottom: 0.5px solid var(--glass-border);
+      display: flex;
+      align-items: flex-end;
+      padding-bottom: 10px;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .topbar-content {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .topbar-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--label);
+    }
+
+    .topbar-status {
+      font-size: 12px;
+      color: var(--label-3);
+      font-weight: 400;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
       flex-shrink: 0;
     }
-    .header h1 { font-size: 18px; font-weight: 700; color: var(--purple); letter-spacing: -0.3px; }
-    .header p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .status-dot.ok      { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .status-dot.err     { background: var(--red); }
+    .status-dot.pending { background: var(--yellow); animation: pulse 1.8s ease infinite; }
 
-    /* ── Tab bar ─────────────────────────────────────────── */
-    .tab-bar {
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    /* ─── Scroll Area ────────────────────────────────────────────────── */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-top: calc(var(--topbar-h) + var(--safe-top) + 16px);
+      padding-bottom: calc(var(--tabbar-h) + var(--safe-bot) + 24px);
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    /* ─── Panels ─────────────────────────────────────────────────────── */
+    .panel {
+      display: none;
+      animation: panelIn var(--t-slow) ease;
+    }
+    .panel.active { display: block; }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Section (iOS Grouped Inset) ────────────────────────────────── */
+    .section { margin-bottom: 28px; }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--label-3);
+      margin-bottom: 7px;
+      padding-left: 4px;
+    }
+
+    .section-body {
+      background: var(--bg-2);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      border: 0.5px solid var(--glass-border);
+    }
+
+    /* ─── Cells ──────────────────────────────────────────────────────── */
+    .cell {
       display: flex;
-      background: var(--base);
-      border-top: 1px solid var(--surface0);
-      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      align-items: center;
+      min-height: 48px;
+      padding: 0 16px;
+      position: relative;
+    }
+
+    .cell + .cell::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 16px; right: 0;
+      height: 0.5px;
+      background: var(--glass-sep);
+    }
+
+    .cell-label {
+      font-size: 15px;
+      color: var(--label-2);
+      min-width: 90px;
+      flex-shrink: 0;
+    }
+
+    /* ─── Inputs ─────────────────────────────────────────────────────── */
+    .cell-input,
+    .cell-textarea,
+    .cell-select {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--label);
+      font-family: var(--font);
+      font-size: 15px;
+      padding: 14px 0;
+      width: 100%;
+      caret-color: var(--accent);
+    }
+
+    .cell-input::placeholder,
+    .cell-textarea::placeholder { color: var(--label-4); }
+
+    .cell-textarea {
+      resize: none;
+      min-height: 120px;
+      padding: 14px 0;
+      line-height: 1.55;
+    }
+
+    .cell-select {
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+      color: var(--label);
+    }
+
+    .cell-select option { background: var(--bg-2); }
+
+    .cell-chevron {
+      color: var(--label-3);
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Full-width cell (textarea) */
+    .cell.cell-tall {
+      align-items: flex-start;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    /* ─── Chips ──────────────────────────────────────────────────────── */
+    .chips-section .section-body {
+      padding: 12px;
+      background: var(--bg-2);
+    }
+
+    .chips-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      padding: 6px 13px;
+      background: var(--fill-2);
+      border: 0.5px solid var(--glass-border);
+      border-radius: var(--r-xl);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--label-2);
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform var(--t-spring), background var(--t), color var(--t), border-color var(--t), box-shadow var(--t);
+      will-change: transform;
+    }
+
+    .chip:active { transform: scale(0.93); }
+
+    .chip.selected {
+      background: var(--accent-soft);
+      border-color: rgba(168, 85, 247, 0.40);
+      color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+      transform: scale(1.03);
+    }
+
+    .chips-empty {
+      font-size: 13px;
+      color: var(--label-3);
+      padding: 4px 2px;
+    }
+
+    /* ─── File Drop ──────────────────────────────────────────────────── */
+    .file-drop {
+      background: var(--bg-2);
+      border-radius: var(--r-lg);
+      border: 1.5px dashed var(--glass-sep);
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color var(--t), background var(--t);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .file-drop.has-file,
+    .file-drop:active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .file-drop input[type="file"] { display: none; }
+
+    .file-drop-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+      line-height: 1;
+    }
+
+    .file-drop-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--label-2);
+    }
+
+    .file-drop-hint {
+      font-size: 12px;
+      color: var(--label-3);
+      margin-top: 4px;
+    }
+
+    .file-drop-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-top: 8px;
+    }
+
+    /* ─── New Category ───────────────────────────────────────────────── */
+    .new-cat-wrap {
+      margin-top: 10px;
+      display: none;
+    }
+    .new-cat-wrap.show { display: block; }
+
+    /* ─── Primary Button ─────────────────────────────────────────────── */
+    .btn-primary {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-lg);
+      font-size: 16px;
+      font-weight: 700;
+      font-family: var(--font);
+      letter-spacing: -0.2px;
+      cursor: pointer;
+      box-shadow: 0 4px 24px var(--accent-glow);
+      transition: transform var(--t), opacity var(--t), box-shadow var(--t);
+      -webkit-tap-highlight-color: transparent;
+      margin-top: 8px;
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.97);
+      box-shadow: 0 2px 12px var(--accent-glow);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* ─── Config Status Card ─────────────────────────────────────────── */
+    .status-card {
+      background: var(--bg-2);
+      border-radius: var(--r-lg);
+      border: 0.5px solid var(--glass-border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .status-card-text { flex: 1; }
+    .status-card-title { font-size: 15px; font-weight: 600; }
+    .status-card-sub   { font-size: 12px; color: var(--label-3); margin-top: 2px; }
+
+    /* Token input */
+    .token-wrap { position: relative; flex: 1; display: flex; }
+    .token-wrap input { flex: 1; }
+    .token-eye {
+      position: absolute;
+      right: 0; top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--label-3);
+      cursor: pointer;
+      padding: 8px;
+      line-height: 0;
+    }
+
+    /* Section footnote */
+    .section-footnote {
+      font-size: 12px;
+      color: var(--label-3);
+      padding: 8px 4px 0;
+      line-height: 1.6;
+    }
+    .section-footnote code {
+      background: var(--fill-2);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    /* ─── Tab Bar ────────────────────────────────────────────────────── */
+    .tabbar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      z-index: 100;
+      z-index: 200;
+      height: calc(var(--tabbar-h) + var(--safe-bot));
+      padding-bottom: var(--safe-bot);
+      border-top: 0.5px solid var(--glass-border);
+      display: flex;
+      align-items: stretch;
     }
+
     .tab-btn {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 3px;
-      padding: 10px 8px;
       background: none;
       border: none;
-      color: var(--muted);
+      color: var(--label-3);
+      font-family: var(--font);
       font-size: 10px;
-      font-family: inherit;
-      cursor: pointer;
-      transition: color 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .tab-btn.active { color: var(--purple); }
-    .tab-btn svg { width: 22px; height: 22px; }
-
-    /* ── Main scroll area ────────────────────────────────── */
-    .main {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 20px 20px;
-      padding-bottom: calc(90px + env(safe-area-inset-bottom));
-    }
-
-    .panel { display: none; }
-    .panel.active { display: block; }
-
-    /* ── Form elements ───────────────────────────────────── */
-    .form-group { margin-bottom: 18px; }
-
-    label {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      margin-bottom: 7px;
-    }
-
-    input[type="text"],
-    input[type="date"],
-    textarea,
-    select {
-      width: 100%;
-      background: var(--surface0);
-      border: 1px solid var(--surface1);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 15px;
-      padding: 11px 13px;
-      outline: none;
-      font-family: inherit;
-      transition: border-color 0.2s;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    input:focus, textarea:focus, select:focus { border-color: var(--purple); }
-    textarea { resize: vertical; min-height: 130px; line-height: 1.5; }
-    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236c7086' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px; }
-    select option { background: var(--surface0); }
-
-    /* ── People chips ────────────────────────────────────── */
-    .people-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      max-height: 144px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .chip {
-      padding: 6px 13px;
-      background: var(--surface0);
-      border: 1px solid var(--surface1);
-      border-radius: 20px;
-      font-size: 13px;
-      color: var(--subtext);
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-    .chip.selected {
-      background: rgba(203, 166, 247, 0.15);
-      border-color: var(--purple);
-      color: var(--purple);
-    }
-    .chips-loading { color: var(--muted); font-size: 13px; padding: 6px 0; }
-
-    /* ── File drop area ──────────────────────────────────── */
-    .file-area {
-      border: 2px dashed var(--surface1);
-      border-radius: 12px;
-      padding: 28px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .file-area:active, .file-area.has-file { border-color: var(--purple); background: rgba(203, 166, 247, 0.05); }
-    .file-area input[type="file"] { display: none; }
-    .file-icon { font-size: 28px; margin-bottom: 8px; }
-    .file-area .hint { color: var(--muted); font-size: 13px; margin-top: 4px; }
-    .file-area .file-name { color: var(--purple); font-size: 14px; font-weight: 500; margin-top: 8px; display: none; }
-
-    /* ── New category input ──────────────────────────────── */
-    .new-cat { display: none; margin-top: 8px; }
-    .new-cat.show { display: block; }
-
-    /* ── Primary button ──────────────────────────────────── */
-    .btn-primary {
-      width: 100%;
-      padding: 14px;
-      background: var(--purple);
-      color: #11111b;
-      border: none;
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      margin-top: 4px;
-      transition: opacity 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-primary:active:not(:disabled) { opacity: 0.85; }
-
-    /* ── Config / Status card ────────────────────────────── */
-    .status-card {
-      background: var(--surface0);
-      border-radius: 12px;
-      padding: 13px 15px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .status-dot.ok      { background: var(--green); }
-    .status-dot.err     { background: var(--red); }
-    .status-dot.pending { background: var(--yellow); animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    .status-label { font-size: 14px; font-weight: 600; }
-    .status-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-    .token-wrap { position: relative; }
-    .token-wrap input { padding-right: 46px; }
-    .token-eye {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      padding: 4px;
-      line-height: 0;
-    }
-
-    .help {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-      line-height: 1.5;
-    }
-
-    .divider { height: 1px; background: var(--surface0); margin: 22px 0; }
-
-    code {
-      background: var(--surface0);
-      padding: 2px 5px;
-      border-radius: 4px;
-      font-size: 11px;
-      color: var(--blue);
-    }
-
-    /* ── Toast ───────────────────────────────────────────── */
-    .toast {
-      position: fixed;
-      bottom: calc(80px + 16px + env(safe-area-inset-bottom));
-      left: 20px;
-      right: 20px;
-      padding: 13px 16px;
-      border-radius: 10px;
-      font-size: 14px;
       font-weight: 500;
-      z-index: 200;
-      transform: translateY(16px);
-      opacity: 0;
-      transition: all 0.25s ease;
-      pointer-events: none;
-      text-align: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: color var(--t);
+      padding-bottom: 2px;
     }
-    .toast.show { transform: translateY(0); opacity: 1; }
-    .toast.success { background: rgba(166, 227, 161, 0.12); border: 1px solid var(--green); color: var(--green); }
-    .toast.error   { background: rgba(243, 139, 168, 0.12); border: 1px solid var(--red);   color: var(--red);   }
 
-    /* ── Spinner ─────────────────────────────────────────── */
+    .tab-btn svg {
+      width: 24px; height: 24px;
+      transition: transform var(--t-spring), color var(--t);
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+    }
+
+    .tab-btn.active svg {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+    }
+
+    /* ─── Spinner ────────────────────────────────────────────────────── */
     .spinner {
       display: inline-block;
-      width: 15px; height: 15px;
-      border: 2px solid rgba(17,17,27, 0.3);
-      border-top-color: #11111b;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       vertical-align: middle;
-      margin-right: 7px;
+      margin-right: 8px;
     }
+
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Section title ───────────────────────────────────── */
-    .section-title {
-      font-size: 13px;
+    /* ─── Toast ──────────────────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--tabbar-h) + var(--safe-bot) + 12px);
+      left: 16px; right: 16px;
+      padding: 13px 16px;
+      border-radius: var(--r-lg);
+      font-size: 14px;
       font-weight: 600;
-      color: var(--subtext);
-      margin-bottom: 14px;
+      z-index: 500;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(10px) scale(0.97);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      pointer-events: none;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .toast.success {
+      background: rgba(48, 209, 88, 0.18);
+      border: 0.5px solid rgba(48, 209, 88, 0.4);
+      color: var(--green);
+    }
+
+    .toast.error {
+      background: rgba(255, 69, 58, 0.18);
+      border: 0.5px solid rgba(255, 69, 58, 0.4);
+      color: var(--red);
+    }
+
+    /* ─── Section title in config ────────────────────────────────────── */
+    .panel-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--label);
+      margin-bottom: 24px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <div class="header">
-    <h1>Segundo Cérebro</h1>
-    <p id="header-sub">Carregando...</p>
-  </div>
+  <!-- ── Top Bar ───────────────────────────────────────────────── -->
+  <nav class="topbar glass">
+    <div class="topbar-content">
+      <span class="topbar-title">Segundo Cérebro</span>
+      <div class="topbar-status">
+        <div class="status-dot pending" id="status-dot"></div>
+        <span id="status-text">Conectando...</span>
+      </div>
+    </div>
+  </nav>
 
-  <!-- Main -->
-  <div class="main">
+  <!-- ── Scroll Area ───────────────────────────────────────────── -->
+  <div class="scroll-area">
 
-    <!-- ── Panel: Nota ─────────────────────────────────── -->
+    <!-- ── Panel: Nota ─────────────────────────────────────────── -->
     <div class="panel active" id="panel-nota">
       <form id="form-nota" autocomplete="off">
 
-        <div class="form-group">
-          <label>Título</label>
-          <input type="text" id="nota-titulo" placeholder="Ex: Reunião com Sonsino" required>
-        </div>
-
-        <div class="form-group">
-          <label>Data</label>
-          <input type="date" id="nota-data" required>
-        </div>
-
-        <div class="form-group">
-          <label>Pessoas</label>
-          <div class="people-grid" id="people-nota">
-            <span class="chips-loading">Carregando...</span>
+        <div class="section">
+          <div class="section-label">Título</div>
+          <div class="section-body">
+            <div class="cell">
+              <input class="cell-input" type="text" id="nota-titulo"
+                placeholder="Ex: Reunião com Sonsino" required>
+            </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Destino</label>
-          <select id="nota-destino">
-            <option value="INBOX">INBOX — entrada rápida</option>
-            <option value="REUNIOES" selected>REUNIOES</option>
-            <option value="PROJETOS">PROJETOS</option>
-            <option value="AREAS">AREAS</option>
-            <option value="CARREIRA">CARREIRA</option>
-            <option value="CONTEUDOS">CONTEUDOS</option>
-            <option value="APRENDIZADOS">APRENDIZADOS</option>
-            <option value="REFERENCIAS">REFERENCIAS</option>
-            <option value="custom">Nova categoria...</option>
-          </select>
-          <div class="new-cat" id="nota-custom-wrap">
-            <input type="text" id="nota-custom" placeholder="Nome da nova pasta">
+        <div class="section">
+          <div class="section-label">Data</div>
+          <div class="section-body">
+            <div class="cell">
+              <input class="cell-input" type="date" id="nota-data" required
+                style="color-scheme: dark;">
+            </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Anotações</label>
-          <textarea id="nota-conteudo" placeholder="Escreva aqui..."></textarea>
+        <div class="section chips-section">
+          <div class="section-label">Pessoas</div>
+          <div class="section-body">
+            <div class="chips-wrap" id="people-nota">
+              <span class="chips-empty">Carregando...</span>
+            </div>
+          </div>
         </div>
 
-        <button type="submit" class="btn-primary" id="btn-nota">Salvar no Vault</button>
+        <div class="section">
+          <div class="section-label">Destino</div>
+          <div class="section-body">
+            <div class="cell">
+              <select class="cell-select" id="nota-destino">
+                <option value="INBOX">INBOX — entrada rápida</option>
+                <option value="REUNIOES" selected>REUNIOES</option>
+                <option value="PROJETOS">PROJETOS</option>
+                <option value="AREAS">AREAS</option>
+                <option value="CARREIRA">CARREIRA</option>
+                <option value="CONTEUDOS">CONTEUDOS</option>
+                <option value="APRENDIZADOS">APRENDIZADOS</option>
+                <option value="REFERENCIAS">REFERENCIAS</option>
+                <option value="custom">Nova categoria...</option>
+              </select>
+              <svg class="cell-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" width="16" height="16">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div class="new-cat-wrap" id="nota-custom-wrap">
+            <div class="section-body">
+              <div class="cell">
+                <input class="cell-input" type="text" id="nota-custom"
+                  placeholder="Nome da nova pasta">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Anotações</div>
+          <div class="section-body">
+            <div class="cell cell-tall">
+              <textarea class="cell-textarea" id="nota-conteudo"
+                placeholder="Escreva aqui..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btn-nota">
+          Salvar no Vault
+        </button>
 
       </form>
     </div>
 
-    <!-- ── Panel: Enviar arquivo ───────────────────────── -->
+    <!-- ── Panel: Enviar ────────────────────────────────────────── -->
     <div class="panel" id="panel-pdf">
       <form id="form-pdf" autocomplete="off">
 
-        <div class="form-group">
-          <label>Arquivo</label>
-          <div class="file-area" id="file-drop" onclick="document.getElementById('pdf-file').click()">
-            <input type="file" id="pdf-file" accept=".pdf,.md,.txt,.png,.jpg,.jpeg" onchange="onFileChange(this)">
-            <div class="file-icon">📎</div>
-            <div style="font-size:14px; color:var(--subtext)">Toque para selecionar</div>
-            <div class="hint">PDF, MD, TXT, imagem</div>
-            <div class="file-name" id="file-name"></div>
+        <div class="section">
+          <div class="section-label">Arquivo</div>
+          <div class="file-drop" id="file-drop"
+            onclick="document.getElementById('pdf-file').click()">
+            <input type="file" id="pdf-file"
+              accept=".pdf,.md,.txt,.png,.jpg,.jpeg"
+              onchange="onFileChange(this)">
+            <div class="file-drop-icon">📎</div>
+            <div class="file-drop-text">Toque para selecionar</div>
+            <div class="file-drop-hint">PDF, MD, TXT, imagem</div>
+            <div class="file-drop-name" id="file-name" style="display:none"></div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Título / Nome</label>
-          <input type="text" id="pdf-titulo" placeholder="Ex: Spec tokens Design System" required>
-        </div>
-
-        <div class="form-group">
-          <label>Pessoas relacionadas</label>
-          <div class="people-grid" id="people-pdf">
-            <span class="chips-loading">Carregando...</span>
+        <div class="section">
+          <div class="section-label">Título</div>
+          <div class="section-body">
+            <div class="cell">
+              <input class="cell-input" type="text" id="pdf-titulo"
+                placeholder="Ex: Spec tokens Design System" required>
+            </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Pasta de destino</label>
-          <select id="pdf-destino" onchange="onPdfDestinoChange()">
-            <option value="ANEXOS/Backups">Backups</option>
-            <option value="custom">Nova pasta em ANEXOS/...</option>
-          </select>
-          <div class="new-cat" id="pdf-custom-wrap">
-            <input type="text" id="pdf-custom" placeholder="Ex: Design System">
-            <p class="help">Será criada dentro de <code>ANEXOS/</code></p>
+        <div class="section chips-section">
+          <div class="section-label">Pessoas relacionadas</div>
+          <div class="section-body">
+            <div class="chips-wrap" id="people-pdf">
+              <span class="chips-empty">Carregando...</span>
+            </div>
           </div>
         </div>
 
-        <button type="submit" class="btn-primary" id="btn-pdf">Enviar pro Vault</button>
+        <div class="section">
+          <div class="section-label">Pasta de destino</div>
+          <div class="section-body">
+            <div class="cell">
+              <select class="cell-select" id="pdf-destino"
+                onchange="onPdfDestinoChange()">
+                <option value="ANEXOS/Backups">Backups</option>
+                <option value="custom">Nova pasta em ANEXOS/...</option>
+              </select>
+              <svg class="cell-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" width="16" height="16">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div class="new-cat-wrap" id="pdf-custom-wrap">
+            <div class="section-body">
+              <div class="cell">
+                <input class="cell-input" type="text" id="pdf-custom"
+                  placeholder="Ex: Design System">
+              </div>
+            </div>
+            <div class="section-footnote">Será criada dentro de <code>ANEXOS/</code></div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btn-pdf">
+          Enviar pro Vault
+        </button>
 
       </form>
     </div>
 
-    <!-- ── Panel: Config ───────────────────────────────── -->
+    <!-- ── Panel: Config ────────────────────────────────────────── -->
     <div class="panel" id="panel-config">
 
       <div class="status-card">
-        <div class="status-dot pending" id="status-dot"></div>
-        <div>
-          <div class="status-label" id="status-text">Verificando...</div>
-          <div class="status-sub" id="status-sub">lftolotti/segundo-cerebro</div>
+        <div class="status-dot pending" id="status-dot-config"></div>
+        <div class="status-card-text">
+          <div class="status-card-title" id="status-card-title">Verificando...</div>
+          <div class="status-card-sub">lftolotti/segundo-cerebro</div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>GitHub Token</label>
-        <div class="token-wrap">
-          <input type="password" id="gh-token" placeholder="ghp_..." autocomplete="off" spellcheck="false">
-          <button type="button" class="token-eye" onclick="toggleToken()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
+      <div class="section">
+        <div class="section-label">GitHub Token</div>
+        <div class="section-body">
+          <div class="cell">
+            <div class="token-wrap">
+              <input class="cell-input" type="password" id="gh-token"
+                placeholder="ghp_..." autocomplete="off" spellcheck="false"
+                style="padding-right: 36px;">
+              <button type="button" class="token-eye" onclick="toggleToken()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" width="18" height="18">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
-        <p class="help">Token fine-grained com permissão <code>Contents: Read and write</code> no repo <code>segundo-cerebro</code>.</p>
+        <div class="section-footnote">
+          Fine-grained token com <code>Contents: Read and write</code> em <code>segundo-cerebro</code>.
+        </div>
       </div>
 
-      <button type="button" class="btn-primary" onclick="saveToken()">Salvar token</button>
+      <button type="button" class="btn-primary" onclick="saveToken()">
+        Salvar token
+      </button>
 
-      <div class="divider"></div>
-
-      <p class="help" style="line-height:1.7">
-        Para criar: GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → New token<br><br>
-        Repo: <code>lftolotti/segundo-cerebro</code><br>
-        Permissão: <code>Repository contents → Read and write</code>
-      </p>
+      <div class="section" style="margin-top: 32px;">
+        <div class="section-label">Como criar</div>
+        <div class="section-body">
+          <div class="cell" style="min-height: auto; padding: 14px 16px;">
+            <p class="section-footnote" style="padding: 0; color: var(--label-2); font-size: 13px;">
+              GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → New token<br><br>
+              Repositório: <code>lftolotti/segundo-cerebro</code><br>
+              Permissão: <code>Contents → Read and write</code>
+            </p>
+          </div>
+        </div>
+      </div>
 
     </div>
 
-  </div>
+  </div><!-- /scroll-area -->
 
-  <!-- Tab bar -->
-  <div class="tab-bar">
+  <!-- ── Tab Bar ───────────────────────────────────────────────── -->
+  <nav class="tabbar glass">
     <button class="tab-btn active" id="tab-nota" onclick="switchTab('nota')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
-        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
         <polyline points="10 9 9 9 8 9"/>
       </svg>
       Nota
     </button>
     <button class="tab-btn" id="tab-pdf" onclick="switchTab('pdf')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="17 8 12 3 7 8"/>
         <line x1="12" y1="3" x2="12" y2="15"/>
@@ -446,45 +773,44 @@
       Enviar
     </button>
     <button class="tab-btn" id="tab-config" onclick="switchTab('config')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
       Config
     </button>
-  </div>
+  </nav>
 
-  <!-- Toast -->
+  <!-- ── Toast ─────────────────────────────────────────────────── -->
   <div class="toast" id="toast"></div>
 
   <script>
-    // ── Constants ──────────────────────────────────────────────────────────
+    // ── Constants ────────────────────────────────────────────────────
     const REPO     = 'lftolotti/segundo-cerebro';
     const API_BASE = 'https://api.github.com';
 
-    // ── State ──────────────────────────────────────────────────────────────
-    let peopleList        = [];
-    let selectedNota      = new Set();
-    let selectedPdf       = new Set();
-    let currentFile       = null;
+    // ── State ────────────────────────────────────────────────────────
+    let peopleList   = [];
+    let selNota      = new Set();
+    let selPdf       = new Set();
+    let currentFile  = null;
 
-    // ── Init ───────────────────────────────────────────────────────────────
+    // ── Init ─────────────────────────────────────────────────────────
     async function init() {
       document.getElementById('nota-data').value = today();
-
-      const token = localStorage.getItem('gh_token');
-      if (token) {
-        document.getElementById('gh-token').value = token;
+      const tok = localStorage.getItem('gh_token');
+      if (tok) {
+        document.getElementById('gh-token').value = tok;
         await checkConnection();
         await Promise.all([loadPeople(), loadPdfFolders()]);
       } else {
-        setStatus('err', 'Token não configurado', 'Configure na aba Config');
-        setHeaderSub('Configure o token em Config');
-        setPeopleError();
+        setStatus('err', 'Token não configurado');
+        setPeopleMsg('Configure o token em Config');
       }
     }
 
-    // ── GitHub helpers ─────────────────────────────────────────────────────
+    // ── GitHub API ───────────────────────────────────────────────────
     function token() { return localStorage.getItem('gh_token'); }
 
     async function ghGet(path) {
@@ -512,7 +838,6 @@
       return r.json();
     }
 
-    // Each path segment encoded individually
     function enc(path) {
       return path.split('/').map(encodeURIComponent).join('/');
     }
@@ -529,25 +854,34 @@
       return name.replace(/[/\\?%*:|"<>]/g, '-').trim();
     }
 
-    // ── Connection check ───────────────────────────────────────────────────
+    // ── Connection ───────────────────────────────────────────────────
     async function checkConnection() {
-      setStatus('pending', 'Conectando...', REPO);
+      setStatus('pending', 'Conectando...');
       try {
         await ghGet(`/repos/${REPO}`);
-        setStatus('ok', 'Conectado', REPO);
-        setHeaderSub('Vault conectado ✓');
+        setStatus('ok', 'Conectado');
       } catch (e) {
-        setStatus('err', 'Falha na autenticação', e.message);
-        setHeaderSub('Erro — verifique o token');
+        setStatus('err', 'Falha na autenticação');
       }
     }
 
-    // ── Token ──────────────────────────────────────────────────────────────
+    function setStatus(state, text) {
+      ['status-dot', 'status-dot-config'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.className = `status-dot ${state}`;
+      });
+      const t = document.getElementById('status-text');
+      if (t) t.textContent = text;
+      const ct = document.getElementById('status-card-title');
+      if (ct) ct.textContent = text;
+    }
+
+    // ── Token ────────────────────────────────────────────────────────
     function saveToken() {
       const val = document.getElementById('gh-token').value.trim();
-      if (!val) return toast('Digite um token', 'error');
+      if (!val) return showToast('Digite um token', 'error');
       localStorage.setItem('gh_token', val);
-      toast('Token salvo!', 'success');
+      showToast('Token salvo!', 'success');
       checkConnection().then(() => Promise.all([loadPeople(), loadPdfFolders()]));
     }
 
@@ -556,7 +890,7 @@
       el.type = el.type === 'password' ? 'text' : 'password';
     }
 
-    // ── People ─────────────────────────────────────────────────────────────
+    // ── People ───────────────────────────────────────────────────────
     async function loadPeople() {
       try {
         const files = await ghGet(`/repos/${REPO}/contents/PESSOAS`);
@@ -567,35 +901,36 @@
         renderChips('people-nota', 'nota');
         renderChips('people-pdf', 'pdf');
       } catch {
-        setPeopleError();
+        setPeopleMsg('Erro ao carregar pessoas');
       }
     }
 
     function renderChips(containerId, tab) {
       const el = document.getElementById(containerId);
+      const sel = tab === 'nota' ? selNota : selPdf;
       if (!peopleList.length) {
-        el.innerHTML = '<span class="chips-loading">Nenhuma pessoa encontrada</span>';
+        el.innerHTML = '<span class="chips-empty">Nenhuma pessoa encontrada</span>';
         return;
       }
-      const sel = tab === 'nota' ? selectedNota : selectedPdf;
-      el.innerHTML = peopleList.map(name =>
-        `<div class="chip${sel.has(name) ? ' selected' : ''}" onclick="togglePerson('${name.replace(/'/g, "\\'")}','${tab}')">${name}</div>`
-      ).join('');
+      el.innerHTML = peopleList.map(name => {
+        const safe = name.replace(/'/g, "\\'");
+        return `<div class="chip${sel.has(name) ? ' selected' : ''}" onclick="togglePerson('${safe}','${tab}')">${name}</div>`;
+      }).join('');
     }
 
     function togglePerson(name, tab) {
-      const sel = tab === 'nota' ? selectedNota : selectedPdf;
+      const sel = tab === 'nota' ? selNota : selPdf;
       sel.has(name) ? sel.delete(name) : sel.add(name);
       renderChips(`people-${tab}`, tab);
     }
 
-    function setPeopleError() {
+    function setPeopleMsg(msg) {
       ['people-nota', 'people-pdf'].forEach(id => {
-        document.getElementById(id).innerHTML = '<span class="chips-loading">Configure o token para carregar</span>';
+        document.getElementById(id).innerHTML = `<span class="chips-empty">${msg}</span>`;
       });
     }
 
-    // ── PDF folders ────────────────────────────────────────────────────────
+    // ── PDF Folders ──────────────────────────────────────────────────
     async function loadPdfFolders() {
       try {
         const files = await ghGet(`/repos/${REPO}/contents/ANEXOS`);
@@ -604,7 +939,7 @@
         const sel = document.getElementById('pdf-destino');
         sel.innerHTML = dirs.map(d => `<option value="ANEXOS/${d}">${d}</option>`).join('') +
           '<option value="custom">Nova pasta em ANEXOS/...</option>';
-      } catch { /* keep defaults */ }
+      } catch {}
     }
 
     function onPdfDestinoChange() {
@@ -612,7 +947,7 @@
       document.getElementById('pdf-custom-wrap').classList.toggle('show', v === 'custom');
     }
 
-    // ── File input ─────────────────────────────────────────────────────────
+    // ── File Input ───────────────────────────────────────────────────
     function onFileChange(input) {
       if (!input.files?.length) return;
       currentFile = input.files[0];
@@ -620,15 +955,14 @@
       nameEl.textContent = currentFile.name;
       nameEl.style.display = 'block';
       document.getElementById('file-drop').classList.add('has-file');
-      if (!document.getElementById('pdf-titulo').value) {
+      if (!document.getElementById('pdf-titulo').value)
         document.getElementById('pdf-titulo').value = currentFile.name.replace(/\.[^.]+$/, '');
-      }
     }
 
-    // ── Submit: Nota ───────────────────────────────────────────────────────
+    // ── Nota Submit ──────────────────────────────────────────────────
     document.getElementById('form-nota').addEventListener('submit', async e => {
       e.preventDefault();
-      if (!token()) return toast('Configure o token primeiro', 'error');
+      if (!token()) return showToast('Configure o token primeiro', 'error');
 
       const btn = document.getElementById('btn-nota');
       setBtnLoading(btn, 'Salvando...');
@@ -642,40 +976,39 @@
           ? document.getElementById('nota-custom').value.trim()
           : destSel;
 
-        if (!destino) return toast('Informe a pasta de destino', 'error');
+        if (!destino) return showToast('Informe a pasta de destino', 'error');
 
-        const pessoas = [...selectedNota];
+        const pessoas = [...selNota];
         const pessoasYaml = pessoas.length
           ? '\npessoas:\n' + pessoas.map(p => `  - "[[${p}]]"`).join('\n')
           : '';
 
         const md = `---\ndata: ${data}${pessoasYaml}\ndestino: ${destino}\ntipo: nota\n---\n\n# ${titulo}\n\n${conteudo}`;
-        const filename = `${data} - ${sanitize(titulo)}.md`;
-        const path = `${destino}/${filename}`;
+        const path = `${destino}/${data} - ${sanitize(titulo)}.md`;
 
         await ghPut(`/repos/${REPO}/contents/${enc(path)}`, {
           message: `📝 ${titulo}`,
           content: toB64(md)
         });
 
-        toast('Nota salva no vault! ✓', 'success');
+        showToast('Nota salva! ✓', 'success');
         document.getElementById('nota-titulo').value = '';
         document.getElementById('nota-conteudo').value = '';
-        selectedNota.clear();
+        selNota.clear();
         renderChips('people-nota', 'nota');
 
       } catch (err) {
-        toast('Erro: ' + err.message, 'error');
+        showToast('Erro: ' + err.message, 'error');
       } finally {
         setBtnReady(btn, 'Salvar no Vault');
       }
     });
 
-    // ── Submit: PDF ────────────────────────────────────────────────────────
+    // ── PDF Submit ───────────────────────────────────────────────────
     document.getElementById('form-pdf').addEventListener('submit', async e => {
       e.preventDefault();
-      if (!token()) return toast('Configure o token primeiro', 'error');
-      if (!currentFile)  return toast('Selecione um arquivo', 'error');
+      if (!token()) return showToast('Configure o token primeiro', 'error');
+      if (!currentFile)  return showToast('Selecione um arquivo', 'error');
 
       const btn = document.getElementById('btn-pdf');
       setBtnLoading(btn, 'Enviando...');
@@ -687,13 +1020,12 @@
           ? 'ANEXOS/' + document.getElementById('pdf-custom').value.trim()
           : destSel;
 
-        if (!destino || destino === 'ANEXOS/') return toast('Informe a pasta', 'error');
+        if (!destino || destino === 'ANEXOS/') return showToast('Informe a pasta', 'error');
 
         const ext      = currentFile.name.split('.').pop();
         const safeName = sanitize(titulo);
         const path     = `${destino}/${safeName}.${ext}`;
 
-        // Read file as base64
         const b64 = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload  = () => resolve(reader.result.split(',')[1]);
@@ -706,74 +1038,67 @@
           content: b64
         });
 
-        // Create companion .md if people selected
-        const pessoas = [...selectedPdf];
+        const pessoas = [...selPdf];
         if (pessoas.length) {
           const pessoasYaml = '\npessoas:\n' + pessoas.map(p => `  - "[[${p}]]"`).join('\n');
           const noteMd = `---\ndata: ${today()}${pessoasYaml}\ntipo: arquivo\n---\n\n# ${titulo}\n\nArquivo: \`${safeName}.${ext}\`\n`;
-          const notePath = `${destino}/${safeName}.md`;
-          await ghPut(`/repos/${REPO}/contents/${enc(notePath)}`, {
+          await ghPut(`/repos/${REPO}/contents/${enc(`${destino}/${safeName}.md`)}`, {
             message: `📎 nota: ${titulo}`,
             content: toB64(noteMd)
-          }).catch(() => {}); // companion note is optional
+          }).catch(() => {});
         }
 
-        toast('Arquivo enviado pro vault! ✓', 'success');
+        showToast('Arquivo enviado! ✓', 'success');
         currentFile = null;
         document.getElementById('pdf-file').value = '';
         document.getElementById('pdf-titulo').value = '';
         document.getElementById('file-name').style.display = 'none';
         document.getElementById('file-drop').classList.remove('has-file');
-        selectedPdf.clear();
+        selPdf.clear();
         renderChips('people-pdf', 'pdf');
 
       } catch (err) {
-        toast('Erro: ' + err.message, 'error');
+        showToast('Erro: ' + err.message, 'error');
       } finally {
         setBtnReady(btn, 'Enviar pro Vault');
       }
     });
 
-    // ── Nota: custom folder toggle ─────────────────────────────────────────
+    // ── Custom folder toggles ────────────────────────────────────────
     document.getElementById('nota-destino').addEventListener('change', function() {
       document.getElementById('nota-custom-wrap').classList.toggle('show', this.value === 'custom');
     });
 
-    // ── UI helpers ─────────────────────────────────────────────────────────
+    // ── Tab switching ────────────────────────────────────────────────
     function switchTab(tab) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(`panel-${tab}`).classList.add('active');
       document.getElementById(`tab-${tab}`).classList.add('active');
+      document.querySelector('.scroll-area').scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    let _toastTimer;
-    function toast(msg, type = 'success') {
+    // ── Helpers ──────────────────────────────────────────────────────
+    let _toastT;
+    function showToast(msg, type = 'success') {
       const el = document.getElementById('toast');
       el.textContent = msg;
       el.className = `toast ${type} show`;
-      clearTimeout(_toastTimer);
-      _toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+      clearTimeout(_toastT);
+      _toastT = setTimeout(() => el.classList.remove('show'), 3200);
     }
-
-    function setStatus(state, text, sub) {
-      document.getElementById('status-dot').className = `status-dot ${state}`;
-      document.getElementById('status-text').textContent = text;
-      document.getElementById('status-sub').textContent = sub;
-    }
-
-    function setHeaderSub(text) { document.getElementById('header-sub').textContent = text; }
 
     function setBtnLoading(btn, label) {
       btn.disabled = true;
       btn.innerHTML = `<span class="spinner"></span>${label}`;
     }
+
     function setBtnReady(btn, label) {
       btn.disabled = false;
       btn.textContent = label;
     }
 
-    // ── Service Worker ─────────────────────────────────────────────────────
+    // ── Service Worker ───────────────────────────────────────────────
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
