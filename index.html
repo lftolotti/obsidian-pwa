@@ -31,10 +31,10 @@
       --fill:         rgba(120, 120, 128, 0.30);
       --fill-2:       rgba(120, 120, 128, 0.22);
 
-      --accent:       #a855f7;
-      --accent-dark:  #7c3aed;
-      --accent-soft:  rgba(168, 85, 247, 0.18);
-      --accent-glow:  rgba(168, 85, 247, 0.35);
+      --accent:       #ffffff;
+      --accent-dark:  rgba(255, 255, 255, 0.90);
+      --accent-soft:  rgba(255, 255, 255, 0.10);
+      --accent-glow:  rgba(255, 255, 255, 0.12);
 
       --green:        #30d158;
       --green-soft:   rgba(48, 209, 88, 0.14);
@@ -352,8 +352,8 @@
     .btn-primary {
       width: 100%;
       padding: 15px;
-      background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 100%);
-      color: #fff;
+      background: #ffffff;
+      color: #000000;
       border: none;
       border-radius: var(--r-lg);
       font-size: 16px;
@@ -479,13 +479,13 @@
     }
 
     .tab-btn.active {
-      color: var(--accent);
-      background: rgba(168, 85, 247, 0.12);
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.10);
     }
 
     .tab-btn.active svg {
       transform: scale(1.10);
-      filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.50));
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.30));
     }
 
     .tab-btn:active:not(.active) {
@@ -496,8 +496,8 @@
     .spinner {
       display: inline-block;
       width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.25);
-      border-top-color: #fff;
+      border: 2px solid rgba(0,0,0,0.25);
+      border-top-color: #000;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       vertical-align: middle;
