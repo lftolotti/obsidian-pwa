@@ -559,20 +559,6 @@
         </div>
 
         <div class="section">
-          <div class="section-label">Arquivo</div>
-          <div class="file-drop" id="file-drop"
-            onclick="document.getElementById('pdf-file').click()">
-            <input type="file" id="pdf-file"
-              accept=".pdf,.md,.txt,.png,.jpg,.jpeg"
-              onchange="onFileChange(this)">
-            <div class="file-drop-icon">📎</div>
-            <div class="file-drop-text">Toque para selecionar</div>
-            <div class="file-drop-hint">PDF, MD, TXT, imagem</div>
-            <div class="file-drop-name" id="file-name"></div>
-          </div>
-        </div>
-
-        <div class="section">
           <div class="section-label">Categoria</div>
           <div class="section-body">
             <div class="cell">
@@ -594,6 +580,30 @@
               </div>
             </div>
             <div class="section-footnote">Dentro de <code>ANEXOS/</code></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Arquivo</div>
+          <div class="file-drop" id="file-drop"
+            onclick="document.getElementById('pdf-file').click()">
+            <input type="file" id="pdf-file"
+              accept=".pdf,.md,.txt,.png,.jpg,.jpeg"
+              onchange="onFileChange(this)">
+            <div class="file-drop-icon">📎</div>
+            <div class="file-drop-text">Toque para selecionar</div>
+            <div class="file-drop-hint">PDF, MD, TXT, imagem</div>
+            <div class="file-drop-name" id="file-name"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Anotações</div>
+          <div class="section-body">
+            <div class="cell cell-tall">
+              <textarea class="cell-textarea" id="pdf-anotacoes"
+                placeholder="Contexto, observações..."></textarea>
+            </div>
           </div>
         </div>
 
@@ -893,9 +903,11 @@
           : destSel;
         if (!destino || destino === 'ANEXOS/') return showToast('Informe a categoria', 'error');
 
-        const ext      = currentFile.name.split('.').pop();
-        const safeName = sanitize(titulo);
-        const b64      = await new Promise((res, rej) => {
+        const ext        = currentFile.name.split('.').pop();
+        const safeName   = sanitize(titulo);
+        const anotacoes  = document.getElementById('pdf-anotacoes').value.trim();
+        const data       = document.getElementById('pdf-data').value;
+        const b64        = await new Promise((res, rej) => {
           const r = new FileReader();
           r.onload  = () => res(r.result.split(',')[1]);
           r.onerror = rej;
@@ -906,10 +918,17 @@
           message: `📎 ${titulo}`, content: b64
         });
 
+        // Companion .md com anotações
+        const noteMd = `---\ndata: ${data}\ntipo: arquivo\n---\n\n# ${titulo}\n\nArquivo: \`${safeName}.${ext}\`\n${anotacoes ? '\n## Anotações\n\n' + anotacoes : ''}`;
+        await ghPut(`/repos/${REPO}/contents/${enc(`${destino}/${safeName}.md`)}`, {
+          message: `📎 nota: ${titulo}`, content: toB64(noteMd)
+        }).catch(() => {});
+
         showToast('Arquivo enviado! ✓', 'success');
         currentFile = null;
-        document.getElementById('pdf-file').value    = '';
-        document.getElementById('pdf-titulo').value  = '';
+        document.getElementById('pdf-file').value      = '';
+        document.getElementById('pdf-titulo').value    = '';
+        document.getElementById('pdf-anotacoes').value = '';
         document.getElementById('file-name').style.display = 'none';
         document.getElementById('file-drop').classList.remove('has-file');
       } catch (err) {
