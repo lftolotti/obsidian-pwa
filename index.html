@@ -319,10 +319,14 @@
         <div class="form-group">
           <label>Destino</label>
           <select id="nota-destino">
-            <option value="00-Inbox">00-Inbox — entrada rápida</option>
-            <option value="20-Reunioes" selected>20-Reunioes</option>
-            <option value="10-Projetos">10-Projetos</option>
-            <option value="50-Referencias">50-Referencias</option>
+            <option value="INBOX">INBOX — entrada rápida</option>
+            <option value="REUNIOES" selected>REUNIOES</option>
+            <option value="PROJETOS">PROJETOS</option>
+            <option value="AREAS">AREAS</option>
+            <option value="CARREIRA">CARREIRA</option>
+            <option value="CONTEUDOS">CONTEUDOS</option>
+            <option value="APRENDIZADOS">APRENDIZADOS</option>
+            <option value="REFERENCIAS">REFERENCIAS</option>
             <option value="custom">Nova categoria...</option>
           </select>
           <div class="new-cat" id="nota-custom-wrap">
@@ -370,12 +374,12 @@
         <div class="form-group">
           <label>Pasta de destino</label>
           <select id="pdf-destino" onchange="onPdfDestinoChange()">
-            <option value="99-Anexos/Backups">Backups</option>
-            <option value="custom">Nova pasta em 99-Anexos/...</option>
+            <option value="ANEXOS/Backups">Backups</option>
+            <option value="custom">Nova pasta em ANEXOS/...</option>
           </select>
           <div class="new-cat" id="pdf-custom-wrap">
             <input type="text" id="pdf-custom" placeholder="Ex: Design System">
-            <p class="help">Será criada dentro de <code>99-Anexos/</code></p>
+            <p class="help">Será criada dentro de <code>ANEXOS/</code></p>
           </div>
         </div>
 
@@ -555,7 +559,7 @@
     // ── People ─────────────────────────────────────────────────────────────
     async function loadPeople() {
       try {
-        const files = await ghGet(`/repos/${REPO}/contents/30-Pessoas`);
+        const files = await ghGet(`/repos/${REPO}/contents/PESSOAS`);
         peopleList = files
           .filter(f => f.type === 'file' && f.name.endsWith('.md') && !f.name.startsWith('Exemplo'))
           .map(f => f.name.replace('.md', ''))
@@ -594,12 +598,12 @@
     // ── PDF folders ────────────────────────────────────────────────────────
     async function loadPdfFolders() {
       try {
-        const files = await ghGet(`/repos/${REPO}/contents/99-Anexos`);
+        const files = await ghGet(`/repos/${REPO}/contents/ANEXOS`);
         const dirs = files.filter(f => f.type === 'dir').map(f => f.name).sort();
         if (!dirs.length) return;
         const sel = document.getElementById('pdf-destino');
-        sel.innerHTML = dirs.map(d => `<option value="99-Anexos/${d}">${d}</option>`).join('') +
-          '<option value="custom">Nova pasta em 99-Anexos/...</option>';
+        sel.innerHTML = dirs.map(d => `<option value="ANEXOS/${d}">${d}</option>`).join('') +
+          '<option value="custom">Nova pasta em ANEXOS/...</option>';
       } catch { /* keep defaults */ }
     }
 
@@ -680,10 +684,10 @@
         const titulo  = document.getElementById('pdf-titulo').value.trim();
         const destSel = document.getElementById('pdf-destino').value;
         const destino = destSel === 'custom'
-          ? '99-Anexos/' + document.getElementById('pdf-custom').value.trim()
+          ? 'ANEXOS/' + document.getElementById('pdf-custom').value.trim()
           : destSel;
 
-        if (!destino || destino === '99-Anexos/') return toast('Informe a pasta', 'error');
+        if (!destino || destino === 'ANEXOS/') return toast('Informe a pasta', 'error');
 
         const ext      = currentFile.name.split('.').pop();
         const safeName = sanitize(titulo);
