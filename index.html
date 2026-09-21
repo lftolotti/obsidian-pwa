@@ -144,7 +144,7 @@
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
       padding-top: calc(var(--topbar-h) + var(--safe-top) + 16px);
-      padding-bottom: calc(var(--tabbar-h) + var(--safe-bot) + 24px);
+      padding-bottom: calc(60px + var(--safe-bot) + 40px);
       padding-left: 16px;
       padding-right: 16px;
     }
@@ -423,49 +423,73 @@
       color: var(--accent);
     }
 
-    /* ─── Tab Bar ────────────────────────────────────────────────────── */
+    /* ─── Tab Bar — Floating Glass Pill ─────────────────────────────── */
     .tabbar {
       position: fixed;
-      bottom: 0; left: 0; right: 0;
+      bottom: calc(14px + var(--safe-bot));
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 200;
-      height: calc(var(--tabbar-h) + var(--safe-bot));
-      padding-bottom: var(--safe-bot);
-      border-top: 0.5px solid var(--glass-border);
+      width: calc(100% - 48px);
+      max-width: 340px;
+      height: 60px;
+      border-radius: 30px;
+
+      background: rgba(30, 30, 36, 0.78);
+      backdrop-filter: blur(32px) saturate(200%);
+      -webkit-backdrop-filter: blur(32px) saturate(200%);
+
+      border: 0.5px solid rgba(255, 255, 255, 0.13);
+      box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.55),
+        0 4px 12px rgba(0, 0, 0, 0.30),
+        inset 0 0.5px 0 rgba(255, 255, 255, 0.10);
+
       display: flex;
-      align-items: stretch;
+      align-items: center;
+      padding: 0 8px;
     }
 
     .tab-btn {
       flex: 1;
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 3px;
+      height: 48px;
+      border-radius: 24px;
       background: none;
       border: none;
-      color: var(--label-3);
+      color: rgba(235, 235, 245, 0.38);
       font-family: var(--font);
       font-size: 10px;
       font-weight: 500;
+      letter-spacing: 0.01em;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: color var(--t);
-      padding-bottom: 2px;
+      transition: color var(--t), background var(--t);
     }
 
     .tab-btn svg {
-      width: 24px; height: 24px;
-      transition: transform var(--t-spring), color var(--t);
+      width: 22px; height: 22px;
+      stroke-width: 1.6;
+      transition: transform var(--t-spring), filter var(--t);
     }
 
     .tab-btn.active {
       color: var(--accent);
+      background: rgba(168, 85, 247, 0.12);
     }
 
     .tab-btn.active svg {
-      transform: scale(1.08);
-      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transform: scale(1.10);
+      filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.50));
+    }
+
+    .tab-btn:active:not(.active) {
+      background: rgba(255, 255, 255, 0.06);
     }
 
     /* ─── Spinner ────────────────────────────────────────────────────── */
@@ -485,7 +509,7 @@
     /* ─── Toast ──────────────────────────────────────────────────────── */
     .toast {
       position: fixed;
-      bottom: calc(var(--tabbar-h) + var(--safe-bot) + 12px);
+      bottom: calc(60px + var(--safe-bot) + 26px);
       left: 16px; right: 16px;
       padding: 13px 16px;
       border-radius: var(--r-lg);
