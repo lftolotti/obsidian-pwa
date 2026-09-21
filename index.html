@@ -180,32 +180,28 @@
       background: var(--glass-sep);
     }
 
-    /* ─── Date chip row (inside title section) ───────────────────────── */
-    .cell-date {
-      min-height: 36px;
-      padding-bottom: 10px;
-      align-items: center;
-    }
-
     .date-chip {
+      flex-shrink: 0;
+      margin-left: 8px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 4px 11px 4px 8px;
+      gap: 4px;
+      padding: 4px 10px 4px 7px;
       background: var(--fill-2);
       border: 0.5px solid var(--glass-b);
       border-radius: 20px;
       color: var(--label-2);
       font-family: var(--font);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: background var(--t), color var(--t);
+      white-space: nowrap;
     }
 
-    .date-chip:active { background: rgba(255,255,255,0.12); }
-    .date-chip-icon { font-size: 14px; line-height: 1; }
+    .date-chip:active { background: rgba(255,255,255,0.14); color: var(--label); }
+    .date-chip-icon { font-size: 13px; line-height: 1; }
 
     /* Hidden date input — triggered by chip */
     .date-input-hidden {
@@ -487,9 +483,7 @@
             <div class="cell">
               <input class="cell-input" type="text" id="nota-titulo"
                 placeholder="Ex: Reunião com Sonsino" required>
-            </div>
-            <div class="cell cell-date">
-              <button type="button" class="date-chip" id="date-chip" onclick="openDatePicker()">
+              <button type="button" class="date-chip" onclick="openDatePicker('nota-data','date-display')">
                 <span class="date-chip-icon">📅</span>
                 <span id="date-display">Hoje</span>
               </button>
@@ -557,6 +551,11 @@
             <div class="cell">
               <input class="cell-input" type="text" id="pdf-titulo"
                 placeholder="Ex: Spec tokens Design System" required>
+              <button type="button" class="date-chip" onclick="openDatePicker('pdf-data','pdf-date-display')">
+                <span class="date-chip-icon">📅</span>
+                <span id="pdf-date-display">Hoje</span>
+              </button>
+              <input type="date" id="pdf-data" class="date-input-hidden" required>
             </div>
           </div>
         </div>
@@ -729,28 +728,28 @@
 
     // ── Date chip ────────────────────────────────────────────────────
     function initDateChip() {
-      const input   = document.getElementById('nota-data');
-      const display = document.getElementById('date-display');
-      const today   = new Date().toISOString().split('T')[0];
-      input.value   = today;
-      display.textContent = formatDate(today);
-
-      input.addEventListener('change', () => {
-        display.textContent = formatDate(input.value);
+      [['nota-data','date-display'], ['pdf-data','pdf-date-display']].forEach(([inputId, displayId]) => {
+        const input   = document.getElementById(inputId);
+        const display = document.getElementById(displayId);
+        const t       = new Date().toISOString().split('T')[0];
+        input.value   = t;
+        display.textContent = formatDate(t);
+        input.addEventListener('change', () => {
+          display.textContent = formatDate(input.value);
+        });
       });
     }
 
-    function openDatePicker() {
-      const input = document.getElementById('nota-data');
+    function openDatePicker(inputId, displayId) {
+      const input = document.getElementById(inputId);
       try { input.showPicker(); } catch { input.click(); }
     }
 
     function formatDate(val) {
       if (!val) return 'Hoje';
       const d = new Date(val + 'T12:00:00');
-      const today = new Date();
-      today.setHours(12,0,0,0);
-      if (d.getTime() === today.getTime()) return 'Hoje';
+      const now = new Date(); now.setHours(12,0,0,0);
+      if (d.getTime() === now.getTime()) return 'Hoje';
       return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
     }
 
