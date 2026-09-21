@@ -301,6 +301,102 @@
     .new-cat-wrap { display: none; margin-top: 10px; }
     .new-cat-wrap.show { display: block; }
 
+    /* ─── Categoria custom dropdown ──────────────────────────────────── */
+    .cat-panel { }
+
+    .cat-option {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      font-size: 15px;
+      color: var(--label-2);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      border-top: 0.5px solid var(--glass-sep);
+      transition: background var(--t);
+    }
+
+    .cat-option:active { background: rgba(255,255,255,0.05); }
+    .cat-option.selected { color: var(--label); font-weight: 600; }
+
+    .cat-option-check {
+      width: 18px; height: 18px;
+      margin-left: auto;
+      flex-shrink: 0;
+      color: var(--label);
+      opacity: 0;
+    }
+
+    .cat-option.selected .cat-option-check { opacity: 1; }
+
+    /* ─── Pessoa options ─────────────────────────────────────────────── */
+    .pessoa-option {
+      display: flex;
+      align-items: center;
+      padding: 11px 14px;
+      font-size: 14px;
+      color: var(--label-2);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      border-top: 0.5px solid var(--glass-sep);
+      transition: background var(--t);
+    }
+
+    .pessoa-option:active { background: rgba(255,255,255,0.05); }
+
+    .pessoa-option.selected {
+      color: var(--label);
+      font-weight: 600;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .pessoa-option .check {
+      margin-left: auto;
+      opacity: 0;
+      font-size: 14px;
+    }
+
+    .pessoa-option.selected .check { opacity: 1; }
+
+    /* ─── Files list ─────────────────────────────────────────────────── */
+    #files-list { margin-top: 8px; }
+
+    .file-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      background: var(--bg-2);
+      border-radius: 10px;
+      border: 0.5px solid var(--glass-b);
+      margin-bottom: 6px;
+    }
+
+    .file-chip-icon { font-size: 16px; flex-shrink: 0; }
+
+    .file-chip-name {
+      flex: 1;
+      font-size: 13px;
+      color: var(--label-2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-chip-remove {
+      background: none;
+      border: none;
+      color: var(--label-3);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 2px 4px;
+      flex-shrink: 0;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .file-chip-remove:active { color: var(--red); }
+
     .section-footnote {
       font-size: 12px;
       color: var(--label-3);
@@ -959,31 +1055,48 @@
         <div class="section">
           <div class="section-label">Categoria</div>
           <div class="section-body">
-            <div class="cell">
-              <select class="cell-select" id="pdf-destino" onchange="onPdfDestinoChange()">
-                <option value="ANEXOS">ANEXOS</option>
-                <option value="APRENDIZADOS">APRENDIZADOS</option>
-                <option value="AREAS">AREAS</option>
-                <option value="CARREIRA">CARREIRA</option>
-                <option value="CONTEUDOS">CONTEUDOS</option>
-                <option value="NOTAS">NOTAS</option>
-                <option value="PROJETOS">PROJETOS</option>
-                <option value="REFERENCIAS">REFERENCIAS</option>
-                <option value="REUNIOES">REUNIOES</option>
-                <option value="SEMANAL">SEMANAL</option>
-                <option value="custom">Nova categoria...</option>
-              </select>
-              <svg class="cell-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            <div class="cell" onclick="toggleCatPanel()" style="cursor:pointer;">
+              <span class="cell-input" id="cat-display" style="cursor:pointer;color:var(--label);">REUNIOES</span>
+              <svg class="cell-chevron" id="cat-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="1.6" stroke-linecap="round" width="16" height="16">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </div>
           </div>
-          <div class="new-cat-wrap" id="pdf-custom-wrap">
+
+          <!-- Dropdown panel -->
+          <div class="cat-panel" id="cat-panel" style="display:none;">
+            <div class="section-body" style="margin-top:8px;">
+              <div class="cell">
+                <input class="cell-input" type="text" id="cat-search"
+                  placeholder="Buscar categoria..."
+                  oninput="renderCatOptions()"
+                  autocomplete="off">
+              </div>
+              <div id="cat-options"></div>
+            </div>
+          </div>
+
+          <!-- PESSOAS — busca de pessoa -->
+          <div class="new-cat-wrap" id="pessoas-wrap">
+            <div class="section-label" style="margin-top:12px;">Pessoa</div>
             <div class="section-body">
               <div class="cell">
+                <input class="cell-input" type="text" id="pessoa-search"
+                  placeholder="Buscar nome..."
+                  oninput="renderPessoaOptions()"
+                  autocomplete="off">
+              </div>
+              <div id="pessoa-options"></div>
+            </div>
+          </div>
+
+          <!-- Nova categoria customizada -->
+          <div class="new-cat-wrap" id="pdf-custom-wrap">
+            <div class="section-body" style="margin-top:8px;">
+              <div class="cell">
                 <input class="cell-input" type="text" id="pdf-custom"
-                  placeholder="Ex: Design System">
+                  placeholder="Nome da nova pasta">
               </div>
             </div>
             <div class="section-footnote">Dentro de <code>ANEXOS/</code></div>
@@ -999,10 +1112,11 @@
               multiple
               onchange="onFileChange(this)">
             <div class="file-drop-icon">📎</div>
-            <div class="file-drop-text">Toque para selecionar</div>
-            <div class="file-drop-hint">PDF, MD, TXT, imagem — múltiplos arquivos</div>
-            <div class="file-drop-name" id="file-name"></div>
+            <div class="file-drop-text" id="file-drop-text">Toque para selecionar</div>
+            <div class="file-drop-hint">PDF, MD, TXT, imagem</div>
           </div>
+          <!-- Lista de arquivos selecionados -->
+          <div id="files-list"></div>
         </div>
 
         <div class="section">
@@ -1127,6 +1241,7 @@
     // ── Init ─────────────────────────────────────────────────────────
     async function init() {
       initDateChip();
+      renderCatOptions(); // pré-popula opções do dropdown
       const tok = localStorage.getItem('gh_token');
       if (tok) {
         document.getElementById('gh-token').value = tok;
@@ -1502,25 +1617,152 @@
     }
 
 
-    function onPdfDestinoChange() {
-      const v = document.getElementById('pdf-destino').value;
-      document.getElementById('pdf-custom-wrap').classList.toggle('show', v === 'custom');
+    // ── Categoria custom dropdown ─────────────────────────────────────
+    const CAT_OPTIONS = [
+      { value: 'APRENDIZADOS', label: 'APRENDIZADOS' },
+      { value: 'AREAS',        label: 'AREAS' },
+      { value: 'CARREIRA',     label: 'CARREIRA' },
+      { value: 'CONTEUDOS',    label: 'CONTEUDOS' },
+      { value: 'NOTAS',        label: 'NOTAS' },
+      { value: 'PESSOAS',      label: 'PESSOAS' },
+      { value: 'PROJETOS',     label: 'PROJETOS' },
+      { value: 'REFERENCIAS',  label: 'REFERENCIAS' },
+      { value: 'REUNIOES',     label: 'REUNIOES' },
+      { value: 'SEMANAL',      label: 'SEMANAL' },
+      { value: 'ANEXOS',       label: 'ANEXOS' },
+      { value: 'custom',       label: 'Nova categoria...' },
+    ];
+
+    let pdfDestino     = 'REUNIOES';
+    let pessoaSelected = null;
+
+    function toggleCatPanel() {
+      const panel = document.getElementById('cat-panel');
+      const isOpen = panel.style.display !== 'none';
+      panel.style.display = isOpen ? 'none' : 'block';
+      if (!isOpen) {
+        document.getElementById('cat-search').value = '';
+        renderCatOptions();
+        setTimeout(() => document.getElementById('cat-search').focus(), 50);
+      }
     }
+
+    function renderCatOptions() {
+      const query   = document.getElementById('cat-search').value.toLowerCase();
+      const el      = document.getElementById('cat-options');
+      const filtered = CAT_OPTIONS.filter(o => o.label.toLowerCase().includes(query));
+
+      el.innerHTML = filtered.map(o => `
+        <div class="cat-option ${o.value === pdfDestino ? 'selected' : ''}"
+             onclick="selectCategoria('${o.value}','${o.label}')">
+          ${o.label}
+          <svg class="cat-option-check" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>`).join('');
+    }
+
+    function selectCategoria(value, label) {
+      pdfDestino = value;
+      document.getElementById('cat-display').textContent = label;
+      document.getElementById('cat-panel').style.display = 'none';
+      document.getElementById('cat-search').value = '';
+
+      // Mostrar/esconder extras
+      document.getElementById('pdf-custom-wrap').classList.toggle('show', value === 'custom');
+      document.getElementById('pessoas-wrap').classList.toggle('show', value === 'PESSOAS');
+
+      if (value === 'PESSOAS') {
+        pessoaSelected = null;
+        renderPessoaOptions();
+        setTimeout(() => document.getElementById('pessoa-search').focus(), 50);
+      }
+    }
+
+    function renderPessoaOptions() {
+      const query    = document.getElementById('pessoa-search').value.toLowerCase();
+      const el       = document.getElementById('pessoa-options');
+      const filtered = peopleList.filter(n => n.toLowerCase().includes(query));
+
+      if (!filtered.length) {
+        el.innerHTML = '<div style="padding:12px 14px;font-size:13px;color:var(--label-3)">Nenhuma pessoa encontrada</div>';
+        return;
+      }
+
+      el.innerHTML = filtered.map(name => {
+        const safe = name.replace(/'/g, "\\'");
+        return `
+          <div class="pessoa-option ${name === pessoaSelected ? 'selected' : ''}"
+               onclick="selectPessoa('${safe}')">
+            ${name}
+            <span class="check">✓</span>
+          </div>`;
+      }).join('');
+    }
+
+    function selectPessoa(name) {
+      pessoaSelected = pessoaSelected === name ? null : name;
+      renderPessoaOptions();
+    }
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', e => {
+      const panel = document.getElementById('cat-panel');
+      if (panel && panel.style.display !== 'none') {
+        const section = panel.closest('.section');
+        if (!section?.contains(e.target)) {
+          panel.style.display = 'none';
+        }
+      }
+    });
 
     // ── File input ───────────────────────────────────────────────────
     function onFileChange(input) {
       if (!input.files?.length) return;
-      currentFiles = Array.from(input.files);
-      const nameEl = document.getElementById('file-name');
-      if (currentFiles.length === 1) {
-        nameEl.textContent = currentFiles[0].name;
-        if (!document.getElementById('pdf-titulo').value)
-          document.getElementById('pdf-titulo').value = currentFiles[0].name.replace(/\.[^.]+$/,'');
-      } else {
-        nameEl.textContent = `${currentFiles.length} arquivos selecionados`;
+      const novos = Array.from(input.files);
+      currentFiles = [...currentFiles, ...novos];
+      input.value = ''; // limpa pra permitir selecionar o mesmo arquivo de novo
+
+      if (currentFiles.length === 1 && !document.getElementById('pdf-titulo').value)
+        document.getElementById('pdf-titulo').value = currentFiles[0].name.replace(/\.[^.]+$/, '');
+
+      renderFilesList();
+    }
+
+    function removeFile(index) {
+      haptic(6);
+      currentFiles.splice(index, 1);
+      renderFilesList();
+    }
+
+    function renderFilesList() {
+      const el   = document.getElementById('files-list');
+      const drop = document.getElementById('file-drop');
+      const txt  = document.getElementById('file-drop-text');
+
+      if (!currentFiles.length) {
+        el.innerHTML = '';
+        drop.classList.remove('has-file');
+        txt.textContent = 'Toque para selecionar';
+        return;
       }
-      nameEl.style.display = 'block';
-      document.getElementById('file-drop').classList.add('has-file');
+
+      drop.classList.add('has-file');
+      txt.textContent = '+ Adicionar mais';
+
+      const icons = { pdf: '📄', md: '📝', txt: '📄', png: '🖼', jpg: '🖼', jpeg: '🖼', default: '📎' };
+
+      el.innerHTML = currentFiles.map((f, i) => {
+        const ext  = f.name.split('.').pop().toLowerCase();
+        const icon = icons[ext] || icons.default;
+        return `
+          <div class="file-chip">
+            <span class="file-chip-icon">${icon}</span>
+            <span class="file-chip-name">${f.name}</span>
+            <button type="button" class="file-chip-remove" onclick="removeFile(${i})">×</button>
+          </div>`;
+      }).join('');
     }
 
     // ── Submit: Nota ─────────────────────────────────────────────────
@@ -1561,10 +1803,9 @@
       setBtnLoading(btn, 'Enviando...');
       try {
         const titulo  = document.getElementById('pdf-titulo').value.trim();
-        const destSel = document.getElementById('pdf-destino').value;
-        const destino = destSel === 'custom'
+        const destino = pdfDestino === 'custom'
           ? 'ANEXOS/' + document.getElementById('pdf-custom').value.trim()
-          : destSel;
+          : pdfDestino;
         if (!destino || destino === 'ANEXOS/') return showToast('Informe a categoria', 'error');
 
         const anotacoes = document.getElementById('pdf-anotacoes').value.trim();
@@ -1593,11 +1834,12 @@
           });
         }
 
-        // Companion .md com anotações (apenas se houver anotações ou for arquivo único com título)
-        if (anotacoes || (currentFiles.length === 1 && titulo)) {
-          const safeName = sanitize(titulo || currentFiles[0].name.replace(/\.[^.]+$/, ''));
-          const ext      = currentFiles[0].name.split('.').pop();
-          const noteMd   = `---\ndata: ${data}\ntipo: arquivo\n---\n\n# ${titulo || safeName}\n\nArquivo: \`${safeName}.${ext}\`\n${anotacoes ? '\n## Anotações\n\n' + anotacoes : ''}`;
+        // Companion .md com anotações e pessoa vinculada
+        if (anotacoes || pessoaSelected || (currentFiles.length === 1 && titulo)) {
+          const safeName   = sanitize(titulo || currentFiles[0].name.replace(/\.[^.]+$/, ''));
+          const ext        = currentFiles[0].name.split('.').pop();
+          const pessoaYaml = pessoaSelected ? `\npessoa: "[[${pessoaSelected}]]"` : '';
+          const noteMd     = `---\ndata: ${data}${pessoaYaml}\ntipo: arquivo\n---\n\n# ${titulo || safeName}\n\nArquivo: \`${safeName}.${ext}\`\n${anotacoes ? '\n## Anotações\n\n' + anotacoes : ''}`;
           await ghPut(`/repos/${REPO}/contents/${enc(`${destino}/${safeName}.md`)}`, {
             message: `📎 nota: ${titulo || safeName}`, content: toB64(noteMd)
           }).catch(() => {});
@@ -1605,12 +1847,12 @@
 
         const plural = currentFiles.length > 1 ? `${currentFiles.length} arquivos enviados` : 'Arquivo enviado';
         showToast(`${plural}! ✓`, 'success');
-        currentFiles = [];
-        document.getElementById('pdf-file').value      = '';
+        currentFiles   = [];
+        pessoaSelected = null;
         document.getElementById('pdf-titulo').value    = '';
         document.getElementById('pdf-anotacoes').value = '';
-        document.getElementById('file-name').style.display = 'none';
-        document.getElementById('file-drop').classList.remove('has-file');
+        document.getElementById('pessoa-search').value = '';
+        renderFilesList();
       } catch (err) {
         showToast('Erro: ' + err.message, 'error');
       } finally {
