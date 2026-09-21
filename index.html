@@ -484,7 +484,6 @@
               <input class="cell-input" type="text" id="nota-titulo"
                 placeholder="Ex: Reunião com Sonsino" required>
               <button type="button" class="date-chip" onclick="openDatePicker('nota-data','date-display')">
-                <span class="date-chip-icon">📅</span>
                 <span id="date-display">Hoje</span>
               </button>
               <input type="date" id="nota-data" class="date-input-hidden" required>
@@ -552,7 +551,6 @@
               <input class="cell-input" type="text" id="pdf-titulo"
                 placeholder="Ex: Spec tokens Design System" required>
               <button type="button" class="date-chip" onclick="openDatePicker('pdf-data','pdf-date-display')">
-                <span class="date-chip-icon">📅</span>
                 <span id="pdf-date-display">Hoje</span>
               </button>
               <input type="date" id="pdf-data" class="date-input-hidden" required>
@@ -746,11 +744,9 @@
     }
 
     function formatDate(val) {
-      if (!val) return 'Hoje';
-      const d = new Date(val + 'T12:00:00');
-      const now = new Date(); now.setHours(12,0,0,0);
-      if (d.getTime() === now.getTime()) return 'Hoje';
-      return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+      if (!val) return '--/--/--';
+      const [y, m, d] = val.split('-');
+      return `${d}/${m}/${y.slice(2)}`;
     }
 
     // ── Scroll — compact header ───────────────────────────────────────
