@@ -942,79 +942,75 @@
       }
     }
 
-    // ── Home ──────────────────────────────────────────────────────────
-    const PEOPLE_CACHE_KEY = 'cerebro_pessoas_v1';
-    const PEOPLE_CACHE_TTL = 60 * 60 * 1000; // 1h
+    // ── Home — uma query GraphQL traz tudo ───────────────────────────
+    const CACHE_KEY = 'cerebro_home_v1';
+    const CACHE_TTL = 60 * 60 * 1000; // 1h
 
     async function loadHome(forceRefresh = false) {
       if (!token()) return;
-      loadWeekCard();
-      loadPeopleCards(forceRefresh);
+
+      // Serve cache instantaneamente
+      if (!forceRefresh) {
+        const cached = getHomeCache();
+        if (cached) { renderHome(cached); return; }
+      }
+
+      // Uma única query GraphQL — tudo de uma vez
+      try {
+        const [owner, repo] = REPO.split('/');
+        const data = await ghGraphQL(`{
+          repository(owner: "${owner}", name: "${repo}") {
+            pessoas: object(expression: "main:PESSOAS") {
+              ... on Tree { entries { name object { ... on Blob { text } } } }
+            }
+            semanal: object(expression: "main:SEMANAL") {
+              ... on Tree { entries { name object { ... on Blob { text } } } }
+            }
+          }
+        }`);
+
+        const payload = { pessoas: parsePessoas(data), semanal: parseSemanal(data) };
+        setHomeCache(payload);
+        renderHome(payload);
+      } catch(e) {
+        showToast('Erro ao carregar home', 'error');
+      }
     }
 
-    async function loadWeekCard() {
-      const el = document.getElementById('home-semana');
-      try {
-        const files = await ghGet(`/repos/${REPO}/contents/SEMANAL`);
-        const mds   = files.filter(f => f.name.endsWith('.md')).sort((a,b) => b.name.localeCompare(a.name));
-        if (!mds.length) return;
+    function parsePessoas(data) {
+      return (data.repository.pessoas?.entries || [])
+        .filter(e => e.name.endsWith('.md') && !e.name.startsWith('Exemplo') && e.object?.text)
+        .map(e => ({
+          name: e.name.replace('.md',''),
+          fm:   parseFrontmatter(e.object.text),
+          ctx:  parseSection(e.object.text, 'Contexto')
+        }))
+        .sort((a,b) => a.name.localeCompare(b.name, 'pt'));
+    }
 
-        const raw     = await ghGet(`/repos/${REPO}/contents/${enc(mds[0].path)}`);
-        const content = decodeB64(raw.content);
-        const title   = mds[0].name.replace('.md','');
+    function parseSemanal(data) {
+      const entries = (data.repository.semanal?.entries || [])
+        .filter(e => e.name.endsWith('.md') && e.object?.text)
+        .sort((a,b) => b.name.localeCompare(a.name));
+      if (!entries.length) return null;
+      return { title: entries[0].name.replace('.md',''), content: entries[0].object.text };
+    }
 
-        el.innerHTML = `
+    function renderHome({ pessoas, semanal }) {
+      // Semana
+      const semEl = document.getElementById('home-semana');
+      if (semanal) {
+        semEl.innerHTML = `
           <div class="home-section-label">Semana</div>
           <div class="week-card">
-            <div class="week-card-title">${title}</div>
-            <div class="week-card-body">${mdToHtml(stripFrontmatter(content))}</div>
+            <div class="week-card-title">${semanal.title}</div>
+            <div class="week-card-body">${mdToHtml(stripFrontmatter(semanal.content))}</div>
           </div>`;
-      } catch {}
-    }
-
-    async function loadPeopleCards(forceRefresh = false) {
-      const el = document.getElementById('home-pessoas');
-
-      // 1. Serve cache instantly if fresh
-      if (!forceRefresh) {
-        const cached = getCachedPeople();
-        if (cached) {
-          peopleData = cached;
-          renderPeopleGrid(el, cached);
-          return;
-        }
       }
 
-      // 2. Fetch directory listing — fast, 1 call
-      let mds;
-      try {
-        const files = await ghGet(`/repos/${REPO}/contents/PESSOAS`);
-        mds = files.filter(f => f.type==='file' && f.name.endsWith('.md') && !f.name.startsWith('Exemplo'));
-      } catch {
-        el.innerHTML = `<div class="home-section-label">Pessoas</div><div class="empty-state"><div class="empty-icon">⚠️</div>Erro ao carregar</div>`;
-        return;
-      }
-
-      // 3. Render skeleton cards immediately from filenames
-      const skeleton = mds.map(f => ({ name: f.name.replace('.md',''), fm: {}, ctx: '', path: f.path }));
-      peopleData = skeleton;
-      renderPeopleGrid(el, skeleton);
-
-      // 4. Fetch all file contents in parallel (background)
-      const people = await Promise.all(mds.map(async (f, i) => {
-        try {
-          const raw     = await ghGet(`/repos/${REPO}/contents/${enc(f.path)}`);
-          const content = decodeB64(raw.content);
-          return { name: f.name.replace('.md',''), fm: parseFrontmatter(content), ctx: parseSection(content, 'Contexto'), path: f.path };
-        } catch {
-          return skeleton[i];
-        }
-      }));
-
-      // 5. Update UI + cache
-      peopleData = people;
-      renderPeopleGrid(el, people);
-      cachePeople(people);
+      // Pessoas
+      peopleData = pessoas;
+      renderPeopleGrid(document.getElementById('home-pessoas'), pessoas);
     }
 
     function renderPeopleGrid(el, people) {
@@ -1030,17 +1026,17 @@
         </div>`;
     }
 
-    function getCachedPeople() {
+    function getHomeCache() {
       try {
-        const raw = localStorage.getItem(PEOPLE_CACHE_KEY);
+        const raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
         const { data, ts } = JSON.parse(raw);
-        return (Date.now() - ts < PEOPLE_CACHE_TTL) ? data : null;
+        return (Date.now() - ts < CACHE_TTL) ? data : null;
       } catch { return null; }
     }
 
-    function cachePeople(data) {
-      try { localStorage.setItem(PEOPLE_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch {}
+    function setHomeCache(data) {
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch {}
     }
 
     // ── Person sheet ──────────────────────────────────────────────────
@@ -1134,6 +1130,18 @@
       });
       if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.message||`HTTP ${r.status}`); }
       return r.json();
+    }
+
+    async function ghGraphQL(query) {
+      const r = await fetch('https://api.github.com/graphql', {
+        method: 'POST',
+        headers: { Authorization: `token ${token()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { data, errors } = await r.json();
+      if (errors?.length) throw new Error(errors[0].message);
+      return data;
     }
 
     async function ghPut(path, body) {
