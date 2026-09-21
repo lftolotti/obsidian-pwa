@@ -1581,6 +1581,41 @@
       return r.json();
     }
 
+    // PUT com resolução automática de conflito SHA
+    async function ghPutSafe(path, body) {
+      try {
+        return await ghPut(path, body);
+      } catch (e) {
+        if (e.message.includes('sha') || e.message.includes('SHA') || e.message.includes('422')) {
+          const existing = await ghGet(`/repos/${REPO}/contents/${enc(path)}`);
+          return await ghPut(path, { ...body, sha: existing.sha });
+        }
+        throw e;
+      }
+    }
+
+    // Gera path único adicionando _2, _3... se arquivo já existe
+    async function uniquePath(destino, safeName, ext) {
+      let path = `${destino}/${safeName}.${ext}`;
+      try {
+        await ghGet(`/repos/${REPO}/contents/${enc(path)}`);
+        // Arquivo existe — adiciona sufixo
+        let i = 2;
+        while (true) {
+          path = `${destino}/${safeName}_${i}.${ext}`;
+          try {
+            await ghGet(`/repos/${REPO}/contents/${enc(path)}`);
+            i++;
+          } catch {
+            break; // path livre
+          }
+        }
+      } catch {
+        // path livre, usa o original
+      }
+      return path;
+    }
+
     function enc(path) { return path.split('/').map(encodeURIComponent).join('/'); }
     function toB64(str) { return btoa(unescape(encodeURIComponent(str))); }
     function sanitize(n) { return n.replace(/[/\\?%*:|"<>]/g,'-').trim(); }
@@ -1832,9 +1867,9 @@
 
           const ext      = file.name.split('.').pop();
           const baseName = currentFiles.length === 1
-            ? sanitize(titulo)
+            ? sanitize(titulo || file.name.replace(/\.[^.]+$/, ''))
             : sanitize(file.name.replace(/\.[^.]+$/, ''));
-          const path     = `${destino}/${baseName}.${ext}`;
+          const path     = await uniquePath(destino, baseName, ext);
 
           const b64 = await new Promise((res, rej) => {
             const r = new FileReader();
@@ -1843,7 +1878,7 @@
             r.readAsDataURL(file);
           });
 
-          await ghPut(`/repos/${REPO}/contents/${enc(path)}`, {
+          await ghPutSafe(`/repos/${REPO}/contents/${enc(path)}`, {
             message: `📎 ${baseName}`, content: b64
           });
         }
