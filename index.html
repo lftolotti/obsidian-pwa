@@ -82,18 +82,7 @@
       justify-content: space-between;
       gap: 12px;
       padding: 8px 0 20px;
-      transition: padding var(--t), background var(--t);
-    }
-
-    .sticky-header.compact {
-      padding: 6px 0 10px;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(20px) saturate(160%);
-      -webkit-backdrop-filter: blur(20px) saturate(160%);
-      margin: 0 -16px;
-      padding-left: 16px;
-      padding-right: 16px;
-      border-bottom: 0.5px solid var(--glass-b);
+      background: var(--bg);
     }
 
     .large-title {
@@ -101,14 +90,6 @@
       font-weight: 700;
       letter-spacing: -0.5px;
       line-height: 1.1;
-      transition: font-size var(--t), letter-spacing var(--t);
-    }
-
-    .sticky-header.compact .large-title {
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: -0.2px;
-      align-self: center;
     }
 
     /* ─── Save Button ────────────────────────────────────────────────── */
@@ -127,21 +108,11 @@
       font-weight: 600;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: padding var(--t), font-size var(--t), background var(--t), transform var(--t-s);
       margin-top: 6px;
     }
 
-    .save-btn:active:not(:disabled) { transform: scale(0.94); }
+    .save-btn:active:not(:disabled) { opacity: 0.6; }
     .save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .sticky-header.compact .save-btn {
-      padding: 5px 12px;
-      font-size: 13px;
-      margin-top: 0;
-      background: rgba(255,255,255,0.08);
-    }
-
-    .save-btn .btn-icon { display: none; }
 
     /* ─── Sections ───────────────────────────────────────────────────── */
     .section { margin-bottom: 28px; }
@@ -722,7 +693,6 @@
     // ── Init ─────────────────────────────────────────────────────────
     async function init() {
       initDateChip();
-      initScrollBehavior();
 
       const tok = localStorage.getItem('gh_token');
       if (tok) {
@@ -759,19 +729,6 @@
       return `${d}/${m}/${y.slice(2)}`;
     }
 
-    // ── Scroll — compact header ───────────────────────────────────────
-    function initScrollBehavior() {
-      const scrollArea = document.getElementById('scroll-area');
-      scrollArea.addEventListener('scroll', () => {
-        const panel = document.querySelector('.panel.active');
-        if (!panel) return;
-        const headerId = panel.id.replace('panel-', 'header-');
-        const header   = document.getElementById(headerId);
-        if (!header) return;
-        const scrolled = scrollArea.scrollTop > 56;
-        header.classList.toggle('compact', scrolled);
-      }, { passive: true });
-    }
 
     // ── GitHub API ───────────────────────────────────────────────────
     function token() { return localStorage.getItem('gh_token'); }
