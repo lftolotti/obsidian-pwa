@@ -1241,7 +1241,8 @@
     // ── Init ─────────────────────────────────────────────────────────
     async function init() {
       initDateChip();
-      renderCatOptions(); // pré-popula opções do dropdown
+      // Dropdown de categoria já está pronto no DOM ao carregar
+      selectCategoria('REUNIOES', 'REUNIOES'); // valor padrão
       const tok = localStorage.getItem('gh_token');
       if (tok) {
         document.getElementById('gh-token').value = tok;
@@ -1669,19 +1670,32 @@
       document.getElementById('cat-panel').style.display = 'none';
       document.getElementById('cat-search').value = '';
 
-      // Mostrar/esconder extras
       document.getElementById('pdf-custom-wrap').classList.toggle('show', value === 'custom');
       document.getElementById('pessoas-wrap').classList.toggle('show', value === 'PESSOAS');
 
       if (value === 'PESSOAS') {
         pessoaSelected = null;
-        renderPessoaOptions();
-        setTimeout(() => document.getElementById('pessoa-search').focus(), 50);
+        ensurePeopleLoaded().then(() => {
+          renderPessoaOptions();
+          setTimeout(() => document.getElementById('pessoa-search').focus(), 50);
+        });
       }
     }
 
+    // Garante que a lista de pessoas está carregada
+    async function ensurePeopleLoaded() {
+      if (peopleList.length > 0) return;
+      try {
+        const files = await ghGet(`/repos/${REPO}/contents/PESSOAS`);
+        peopleList = files
+          .filter(f => f.type === 'file' && f.name.endsWith('.md') && !f.name.startsWith('Exemplo'))
+          .map(f => f.name.replace('.md', ''))
+          .sort((a, b) => a.localeCompare(b, 'pt'));
+      } catch {}
+    }
+
     function renderPessoaOptions() {
-      const query    = document.getElementById('pessoa-search').value.toLowerCase();
+      const query    = (document.getElementById('pessoa-search').value || '').toLowerCase();
       const el       = document.getElementById('pessoa-options');
       const filtered = peopleList.filter(n => n.toLowerCase().includes(query));
 
