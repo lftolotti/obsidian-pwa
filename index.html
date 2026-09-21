@@ -352,6 +352,163 @@
       color: var(--label-3); cursor: pointer; padding: 8px; line-height: 0;
     }
 
+    /* ─── TO DO cards ───────────────────────────────────────────────── */
+    .todo-card {
+      background: var(--bg-2);
+      border-radius: 14px;
+      border: 0.5px solid var(--glass-b);
+      padding: 14px 14px 14px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .radio-btn {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--label-3);
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: background var(--t), border-color var(--t);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .radio-btn.checked {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .radio-btn.checked::after {
+      content: '';
+      width: 7px; height: 7px;
+      background: #000;
+      border-radius: 50%;
+    }
+
+    .todo-body { flex: 1; min-width: 0; }
+
+    .todo-text {
+      font-size: 15px;
+      color: var(--label);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .todo-text.done {
+      text-decoration: line-through;
+      color: var(--label-3);
+    }
+
+    .todo-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .todo-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .todo-tag.project {
+      background: rgba(255,255,255,0.08);
+      color: var(--label-2);
+    }
+
+    .todo-tag.person {
+      background: rgba(255,255,255,0.05);
+      color: var(--label-3);
+    }
+
+    /* ─── Nav cards ──────────────────────────────────────────────────── */
+    .nav-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .nav-card {
+      background: var(--bg-2);
+      border-radius: 16px;
+      border: 0.5px solid var(--glass-b);
+      padding: 18px 16px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background var(--t);
+    }
+
+    .nav-card:active { background: rgba(255,255,255,0.06); }
+
+    .nav-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--label-3);
+      margin-bottom: 6px;
+    }
+
+    .nav-card-count {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--label);
+      line-height: 1;
+    }
+
+    .nav-card-arrow {
+      font-size: 14px;
+      color: var(--label-3);
+      margin-top: 8px;
+    }
+
+    /* ─── Sheet list / detail ────────────────────────────────────────── */
+    .sheet-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--label-2);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      margin-bottom: 20px;
+      padding: 4px 0;
+    }
+
+    .sheet-list-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 20px;
+    }
+
+    .sheet-list-item {
+      padding: 14px 0;
+      border-bottom: 0.5px solid var(--glass-sep);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .sheet-list-item:last-child { border-bottom: none; }
+
+    .sheet-list-item-main { flex: 1; min-width: 0; }
+    .sheet-list-item-name { font-size: 15px; color: var(--label); font-weight: 500; }
+    .sheet-list-item-sub  { font-size: 12px; color: var(--label-3); margin-top: 2px; }
+    .sheet-list-chevron   { color: var(--label-3); font-size: 16px; margin-left: 8px; flex-shrink: 0; }
+
+    /* Detail inside sheet */
+    .sheet-detail-name    { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+    .sheet-detail-role    { font-size: 14px; color: var(--label-2); margin-bottom: 2px; }
+    .sheet-detail-meta    { font-size: 13px; color: var(--label-3); margin-bottom: 18px; }
+    .sheet-detail-body    { font-size: 14px; color: var(--label-2); line-height: 1.7; white-space: pre-wrap; }
+
     /* ─── Home cards ─────────────────────────────────────────────────── */
     .home-section-label {
       font-size: 12px;
@@ -703,9 +860,8 @@
         <h1 class="large-title">Home</h1>
         <button onclick="loadHome(true)" class="refresh-btn">↻</button>
       </div>
-      <div id="home-lembretes"></div>
-      <div id="home-projetos"></div>
-      <div id="home-pessoas"></div>
+      <div id="home-todos"></div>
+      <div id="home-nav"></div>
     </div>
 
     <!-- ── NOTA ────────────────────────────────────────────────── -->
@@ -925,12 +1081,9 @@
 
   <!-- ── Person sheet ─────────────────────────────────────────── -->
   <div class="person-sheet" id="person-sheet" onclick="closeSheet(event)">
-    <div class="person-sheet-inner">
+    <div class="person-sheet-inner" id="sheet-inner">
       <div class="sheet-handle"></div>
-      <div class="sheet-name"    id="sheet-name"></div>
-      <div class="sheet-role"    id="sheet-role"></div>
-      <div class="sheet-company" id="sheet-company"></div>
-      <div class="sheet-body"    id="sheet-body"></div>
+      <div id="sheet-dynamic"></div>
     </div>
   </div>
 
@@ -1003,46 +1156,42 @@
       }
     }
 
-    // ── Home — uma query GraphQL traz tudo ───────────────────────────
-    const CACHE_KEY = 'cerebro_home_v2'; // bump pra invalidar cache antigo
-    const CACHE_TTL = 60 * 60 * 1000; // 1h
+    // ── Home ─────────────────────────────────────────────────────────
+    const CACHE_KEY = 'cerebro_home_v3';
+    const CACHE_TTL = 60 * 60 * 1000;
+
+    // Rank de relação para ordenar pessoas nos TO DOs
+    const REL_RANK = { 'chefe': 0, 'stakeholder': 1, 'par': 2, 'liderada': 3, 'liderado': 3 };
+
+    let _homeData = null;
+    let _checkedTodos = new Set();
 
     async function loadHome(forceRefresh = false) {
-      if (!token()) {
-        setHomePlaceholder('Configure o token em Config');
-        return;
-      }
-
+      if (!token()) { setHomePlaceholder('Configure o token em Config'); return; }
       setHomePlaceholder('Carregando...');
 
-      // Serve cache instantaneamente
       if (!forceRefresh) {
         const cached = getHomeCache();
-        if (cached) { renderHome(cached); return; }
+        if (cached) { _homeData = cached; renderHome(cached); return; }
       }
 
       try {
         const [owner, repo] = REPO.split('/');
         const data = await ghGraphQL(`{
           repository(owner: "${owner}", name: "${repo}") {
-            pessoas: object(expression: "main:PESSOAS") {
-              ... on Tree { entries { name object { ... on Blob { text } } } }
-            }
-            semanal: object(expression: "main:SEMANAL") {
-              ... on Tree { entries { name object { ... on Blob { text } } } }
-            }
-            projetos: object(expression: "main:PROJETOS") {
-              ... on Tree { entries { name object { ... on Blob { text } } } }
-            }
+            pessoas:  object(expression: "main:PESSOAS")  { ... on Tree { entries { name object { ... on Blob { text } } } } }
+            projetos: object(expression: "main:PROJETOS") { ... on Tree { entries { name object { ... on Blob { text } } } } }
+            reunioes: object(expression: "main:REUNIOES") { ... on Tree { entries { name object { ... on Blob { text } } } } }
+            notas:    object(expression: "main:NOTAS")    { ... on Tree { entries { name object { ... on Blob { text } } } } }
           }
         }`);
 
-        const payload = {
-          pessoas:  parsePessoas(data),
-          semanal:  parseSemanal(data),
-          projetos: parseProjetos(data)
-        };
+        const pessoas  = parsePessoas(data);
+        const projetos = parseProjetos(data);
+        const todos    = extractTodos(data, pessoas);
+        const payload  = { pessoas, projetos, todos };
         setHomeCache(payload);
+        _homeData = payload;
         renderHome(payload);
       } catch(e) {
         setHomePlaceholder('Erro ao carregar — toque ↻ pra tentar de novo');
@@ -1050,152 +1199,171 @@
     }
 
     function setHomePlaceholder(msg) {
-      document.getElementById('home-lembretes').innerHTML = '';
-      document.getElementById('home-projetos').innerHTML  = '';
-      document.getElementById('home-pessoas').innerHTML   =
-        `<div class="empty-state"><div class="empty-icon">🧠</div>${msg}</div>`;
+      document.getElementById('home-todos').innerHTML = `<div class="empty-state"><div class="empty-icon">🧠</div>${msg}</div>`;
+      document.getElementById('home-nav').innerHTML   = '';
     }
 
+    // ── Parsers ───────────────────────────────────────────────────────
     function parsePessoas(data) {
       return (data.repository.pessoas?.entries || [])
         .filter(e => e.name.endsWith('.md') && !e.name.startsWith('Exemplo') && e.object?.text)
-        .map(e => {
-          const text = e.object.text;
-          const open = (text.match(/- \[ \]/g) || []).length;
-          return {
-            name: e.name.replace('.md',''),
-            fm:   parseFrontmatter(text),
-            ctx:  parseSection(text, 'Contexto'),
-            open
-          };
-        })
-        .sort((a,b) => a.name.localeCompare(b.name, 'pt'));
-    }
-
-    function parseSemanal(data) {
-      const entries = (data.repository.semanal?.entries || [])
-        .filter(e => e.name.endsWith('.md') && e.object?.text)
-        .sort((a,b) => b.name.localeCompare(a.name));
-      if (!entries.length) return null;
-      return { title: entries[0].name.replace('.md',''), content: entries[0].object.text };
+        .map(e => ({
+          name: e.name.replace('.md',''),
+          fm:   parseFrontmatter(e.object.text),
+          ctx:  parseSection(e.object.text, 'Contexto')
+        }))
+        .sort((a,b) => a.name.localeCompare(b.name,'pt'));
     }
 
     function parseProjetos(data) {
       return (data.repository.projetos?.entries || [])
         .filter(e => e.name.endsWith('.md') && !e.name.startsWith('Exemplo') && e.object?.text)
-        .map(e => {
-          const text = e.object.text;
-          const open = (text.match(/- \[ \]/g) || []).length;
-          const done = (text.match(/- \[x\]/gi) || []).length;
-          return {
-            name:     e.name.replace('.md',''),
-            fm:       parseFrontmatter(text),
-            ctx:      parseSection(text, 'Contexto') || parseSection(text, 'Objetivo'),
-            open,
-            done,
-            finished: open === 0 && done > 0
-          };
-        })
-        .sort((a,b) => a.name.localeCompare(b.name, 'pt'));
+        .map(e => ({
+          name:     e.name.replace('.md',''),
+          fm:       parseFrontmatter(e.object.text),
+          ctx:      parseSection(e.object.text, 'Contexto') || parseSection(e.object.text, 'Objetivo'),
+          open:     (e.object.text.match(/- \[ \]/g)  || []).length,
+          done:     (e.object.text.match(/- \[x\]/gi) || []).length
+        }))
+        .sort((a,b) => a.name.localeCompare(b.name,'pt'));
     }
 
-    function renderHome({ pessoas, semanal, projetos }) {
-      renderLembretes(semanal);
-      renderProjetos(projetos);
-      peopleData = pessoas;
-      renderPessoasHome(pessoas);
+    function extractTodos(data, pessoas) {
+      const todos     = [];
+      const pessoaNames = pessoas.map(p => p.name);
+      const sources   = ['projetos','reunioes','notas'];
+
+      sources.forEach(src => {
+        (data.repository[src]?.entries || []).forEach(e => {
+          if (!e.object?.text) return;
+          const lines     = e.object.text.split('\n');
+          const srcLabel  = e.name.replace('.md','').replace(/^\d{4}-\d{2}-\d{2} - /,'');
+
+          lines.forEach((line, i) => {
+            if (!/^- \[ \]/.test(line)) return;
+            const text = line.replace(/^- \[ \]\s*/,'').trim();
+
+            // Busca menções [[Pessoa]] em contexto ±5 linhas
+            const ctx = lines.slice(Math.max(0,i-5), i+6).join('\n');
+            const mentioned = [...ctx.matchAll(/\[\[([^\]]+)\]\]/g)]
+              .map(m => m[1])
+              .filter(n => pessoaNames.includes(n));
+
+            // Rankeia as pessoas mencionadas
+            const rankedPeople = [...new Set(mentioned)]
+              .map(n => pessoas.find(p => p.name === n))
+              .filter(Boolean)
+              .sort((a,b) => (REL_RANK[a.fm.relacao?.toLowerCase()]??9) - (REL_RANK[b.fm.relacao?.toLowerCase()]??9));
+
+            todos.push({ text, source: srcLabel, people: rankedPeople, id: `${src}:${i}:${e.name}` });
+          });
+        });
+      });
+      return todos;
     }
 
-    function renderLembretes(semanal) {
-      const el = document.getElementById('home-lembretes');
-      if (!semanal) { el.innerHTML = ''; return; }
+    // ── Render ────────────────────────────────────────────────────────
+    function renderHome({ pessoas, projetos, todos }) {
+      renderTodos(todos);
+      renderNavCards(projetos, pessoas);
+    }
 
-      const content = stripFrontmatter(semanal.content);
-      const items   = content.split('\n')
-        .filter(l => /^- \[ \]/.test(l))
-        .map(l => l.replace(/^- \[ \]\s*/, '').trim())
-        .slice(0, 8);
-
-      if (!items.length) { el.innerHTML = ''; return; }
+    function renderTodos(todos) {
+      const el = document.getElementById('home-todos');
+      if (!todos?.length) {
+        el.innerHTML = `
+          <div class="home-section-label">TO DOs</div>
+          <div class="empty-state" style="padding:24px 0">
+            <div class="empty-icon">✅</div>
+            Nenhuma tarefa aberta no vault ainda.
+          </div>`;
+        return;
+      }
 
       el.innerHTML = `
-        <div class="home-section-label">Lembretes da Semana</div>
-        <div class="lembretes-card">
-          ${items.map(t => `
-            <div class="lembrete-item">
-              <div class="lembrete-dot"></div>
-              <span>${t}</span>
-            </div>`).join('')}
+        <div class="home-section-label">TO DOs</div>
+        ${todos.map((t,i) => `
+          <div class="todo-card" onclick="toggleTodo(${i})">
+            <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}" id="radio-${i}"></div>
+            <div class="todo-body">
+              <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${t.text}</div>
+              <div class="todo-tags">
+                <span class="todo-tag project">${t.source}</span>
+                ${t.people.map(p => `<span class="todo-tag person">${p.name}</span>`).join('')}
+              </div>
+            </div>
+          </div>`).join('')}`;
+    }
+
+    function renderNavCards(projetos, pessoas) {
+      document.getElementById('home-nav').innerHTML = `
+        <div class="home-section-label" style="margin-top:32px">Explorar</div>
+        <div class="nav-cards">
+          <div class="nav-card" onclick="openListSheet('projetos')">
+            <div class="nav-card-label">Projetos</div>
+            <div class="nav-card-count">${projetos?.length || 0}</div>
+            <div class="nav-card-arrow">→</div>
+          </div>
+          <div class="nav-card" onclick="openListSheet('pessoas')">
+            <div class="nav-card-label">Pessoas</div>
+            <div class="nav-card-count">${pessoas?.length || 0}</div>
+            <div class="nav-card-arrow">→</div>
+          </div>
         </div>`;
     }
 
-    function renderProjetos(projetos) {
-      const el = document.getElementById('home-projetos');
-      if (!projetos?.length) { el.innerHTML = ''; return; }
-
-      const ativos      = projetos.filter(p => !p.finished);
-      const finalizados = projetos.filter(p => p.finished);
-
-      const cardHtml = (p, i) => `
-        <div class="person-card" onclick="openProjectSheet(${i})">
-          <div class="person-card-name">${p.name}</div>
-          <div class="person-card-role">${p.fm.area || p.fm.tema || ''}</div>
-          ${p.open
-            ? `<span class="task-badge open">${p.open} task${p.open > 1 ? 's' : ''} abertas</span>`
-            : p.done
-              ? `<span class="task-badge done">✓ finalizado</span>`
-              : `<span class="task-badge none">sem tasks</span>`}
-        </div>`;
-
-      el.innerHTML = `
-        <div class="home-section-label">Projetos</div>
-        ${ativos.length ? `
-          <div class="subsection-label">Em andamento</div>
-          <div class="people-grid-home">${ativos.map(cardHtml).join('')}</div>` : ''}
-        ${finalizados.length ? `
-          <div class="subsection-label">Finalizados</div>
-          <div class="people-grid-home">${finalizados.map(cardHtml).join('')}</div>` : ''}`;
-
-      window._projetos = projetos;
+    function toggleTodo(i) {
+      haptic(6);
+      const todos = _homeData?.todos || [];
+      const t = todos[i];
+      if (!t) return;
+      _checkedTodos.has(t.id) ? _checkedTodos.delete(t.id) : _checkedTodos.add(t.id);
+      document.getElementById(`radio-${i}`)?.classList.toggle('checked');
+      document.querySelectorAll('.todo-card')[i]?.querySelector('.todo-text')?.classList.toggle('done');
     }
 
-    function renderPessoasHome(pessoas) {
-      const el = document.getElementById('home-pessoas');
-      if (!pessoas?.length) { el.innerHTML = ''; return; }
+    // ── Sheet navigation ──────────────────────────────────────────────
+    function openListSheet(type) {
+      haptic(8);
+      const data     = _homeData;
+      const isProj   = type === 'projetos';
+      const items    = isProj ? data?.projetos : data?.pessoas;
+      const title    = isProj ? 'Projetos' : 'Pessoas';
 
-      const comPendencia = pessoas.filter(p => p.open > 0);
-      const semPendencia = pessoas.filter(p => p.open === 0);
+      document.getElementById('sheet-dynamic').innerHTML = `
+        <div class="sheet-list-title">${title}</div>
+        ${!items?.length
+          ? '<div style="color:var(--label-3);font-size:14px">Nenhum item ainda.</div>'
+          : items.map((item, i) => `
+            <div class="sheet-list-item" onclick="openDetailSheet('${type}', ${i})">
+              <div class="sheet-list-item-main">
+                <div class="sheet-list-item-name">${item.name}</div>
+                <div class="sheet-list-item-sub">${isProj
+                  ? (item.open ? `${item.open} task${item.open>1?'s':''} abertas` : item.done ? '✓ Finalizado' : 'Sem tasks')
+                  : (item.fm?.cargo || '')}</div>
+              </div>
+              <span class="sheet-list-chevron">›</span>
+            </div>`).join('')}`;
 
-      const cardHtml = (p, i) => `
-        <div class="person-card" onclick="openSheet(${i})">
-          <div class="person-card-name">${p.name}</div>
-          <div class="person-card-role">${p.fm.cargo || ''}</div>
-          ${p.open
-            ? `<span class="task-badge open">${p.open} pendência${p.open > 1 ? 's' : ''}</span>`
-            : `<span class="person-card-rel ${(p.fm.relacao||'').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z-]/g,'')}">${p.fm.relacao || '—'}</span>`}
-        </div>`;
-
-      el.innerHTML = `
-        <div class="home-section-label">Pessoas</div>
-        ${comPendencia.length ? `
-          <div class="subsection-label">Com pendências</div>
-          <div class="people-grid-home">${comPendencia.map(cardHtml).join('')}</div>` : ''}
-        ${semPendencia.length ? `
-          <div class="subsection-label">Sem pendências</div>
-          <div class="people-grid-home">${semPendencia.map(cardHtml).join('')}</div>` : ''}`;
+      document.getElementById('person-sheet').classList.add('open');
     }
 
-    function renderPeopleGrid(el, people) {
-      el.innerHTML = `
-        <div class="home-section-label">Pessoas</div>
-        <div class="people-grid-home">
-          ${people.map((p,i) => `
-            <div class="person-card" onclick="openSheet(${i})">
-              <div class="person-card-name">${p.name}</div>
-              <div class="person-card-role">${p.fm.cargo || ''}</div>
-              <span class="person-card-rel ${(p.fm.relacao||'').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z-]/g,'')}">${p.fm.relacao || '—'}</span>
-            </div>`).join('')}
-        </div>`;
+    function openDetailSheet(type, i) {
+      haptic(6);
+      const isProj = type === 'projetos';
+      const item   = isProj ? _homeData?.projetos?.[i] : _homeData?.pessoas?.[i];
+      if (!item) return;
+
+      const meta = isProj
+        ? `${item.open ? item.open + ' tasks abertas' : item.done ? '✓ Finalizado' : 'Sem tasks'} · ${item.fm?.area || 'Projeto'}`
+        : `${item.fm?.cargo || ''} · ${item.fm?.empresa || ''}`;
+
+      document.getElementById('sheet-dynamic').innerHTML = `
+        <div class="sheet-back" onclick="openListSheet('${type}')">‹ Voltar</div>
+        <div class="sheet-detail-name">${item.name}</div>
+        <div class="sheet-detail-role">${isProj ? (item.fm?.area || 'Projeto') : (item.fm?.relacao || '')}</div>
+        <div class="sheet-detail-meta">${meta}</div>
+        <div class="sheet-detail-body">${item.ctx || 'Sem descrição registrada.'}</div>`;
     }
 
     function getHomeCache() {
@@ -1211,30 +1379,7 @@
       try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch {}
     }
 
-    // ── Person sheet ──────────────────────────────────────────────────
-    function openSheet(i) {
-      haptic(6);
-      const p = peopleData[i];
-      document.getElementById('sheet-name').textContent    = p.name;
-      document.getElementById('sheet-role').textContent    = p.fm.cargo || '';
-      document.getElementById('sheet-company').textContent = (p.fm.empresa || '') + (p.fm.relacao ? ' · ' + p.fm.relacao : '');
-      document.getElementById('sheet-body').textContent    = p.ctx || 'Sem contexto registrado.';
-      document.getElementById('person-sheet').classList.add('open');
-    }
-
-    function openProjectSheet(i) {
-      haptic(6);
-      const p = (window._projetos || [])[i];
-      if (!p) return;
-      document.getElementById('sheet-name').textContent    = p.name;
-      document.getElementById('sheet-role').textContent    = p.fm.area || p.fm.tema || 'Projeto';
-      document.getElementById('sheet-company').textContent = p.open
-        ? `${p.open} task${p.open>1?'s':''} abertas · ${p.done} concluídas`
-        : p.done ? `✓ Finalizado · ${p.done} tasks concluídas` : 'Sem tasks registradas';
-      document.getElementById('sheet-body').textContent    = p.ctx || 'Sem descrição registrada.';
-      document.getElementById('person-sheet').classList.add('open');
-    }
-
+    // ── Sheet close ───────────────────────────────────────────────────
     function closeSheet(e) {
       if (e.target === document.getElementById('person-sheet'))
         document.getElementById('person-sheet').classList.remove('open');
