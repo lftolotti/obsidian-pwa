@@ -1646,11 +1646,12 @@
 
     // ── Categoria custom dropdown ─────────────────────────────────────
     const CAT_OPTIONS = [
+      { value: 'NOTAS',        label: 'NOTAS',        icon: '📝', pinned: true },
+      { divider: true },
       { value: 'APRENDIZADOS', label: 'APRENDIZADOS' },
       { value: 'AREAS',        label: 'AREAS' },
       { value: 'CARREIRA',     label: 'CARREIRA' },
       { value: 'CONTEUDOS',    label: 'CONTEUDOS' },
-      { value: 'NOTAS',        label: 'NOTAS' },
       { value: 'PESSOAS',      label: 'PESSOAS' },
       { value: 'PROJETOS',     label: 'PROJETOS' },
       { value: 'REFERENCIAS',  label: 'REFERENCIAS' },
@@ -1675,19 +1676,26 @@
     }
 
     function renderCatOptions() {
-      const query   = document.getElementById('cat-search').value.toLowerCase();
-      const el      = document.getElementById('cat-options');
-      const filtered = CAT_OPTIONS.filter(o => o.label.toLowerCase().includes(query));
+      const query = document.getElementById('cat-search').value.toLowerCase();
+      const el    = document.getElementById('cat-options');
 
-      el.innerHTML = filtered.map(o => `
-        <div class="cat-option ${o.value === pdfDestino ? 'selected' : ''}"
-             onclick="selectCategoria('${o.value}','${o.label}')">
-          ${o.label}
-          <svg class="cat-option-check" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>`).join('');
+      const check = `<svg class="cat-option-check" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16">
+        <polyline points="20 6 9 17 4 12"/></svg>`;
+
+      el.innerHTML = CAT_OPTIONS.map(o => {
+        if (o.divider) {
+          // Esconde o divider se busca está ativa
+          return query ? '' : '<div style="height:0.5px;background:var(--glass-sep);margin:4px 14px;"></div>';
+        }
+        if (!o.label.toLowerCase().includes(query)) return '';
+        return `
+          <div class="cat-option ${o.value === pdfDestino ? 'selected' : ''}"
+               onclick="selectCategoria('${o.value}','${o.label}')">
+            ${o.icon ? `<span style="margin-right:8px">${o.icon}</span>` : ''}${o.label}
+            ${check}
+          </div>`;
+      }).join('');
     }
 
     function selectCategoria(value, label) {
