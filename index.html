@@ -860,8 +860,8 @@
         <h1 class="large-title">Home</h1>
         <button onclick="loadHome(true)" class="refresh-btn">↻</button>
       </div>
-      <div id="home-todos"></div>
       <div id="home-nav"></div>
+      <div id="home-todos"></div>
     </div>
 
     <!-- ── NOTA ────────────────────────────────────────────────── -->
@@ -1244,15 +1244,15 @@
 
     // ── Render ────────────────────────────────────────────────────────
     function renderHome({ pessoas, projetos, todos }) {
-      renderTodos(todos);
       renderNavCards(projetos, pessoas);
+      renderTodos(todos);
     }
 
     function renderTodos(todos) {
       const el = document.getElementById('home-todos');
       if (!todos?.length) {
         el.innerHTML = `
-          <div class="home-section-label">TO DOs</div>
+          <div class="home-section-label" style="margin-top:32px">TO DOs</div>
           <div class="empty-state" style="padding:24px 0">
             <div class="empty-icon">✅</div>
             Nenhuma tarefa aberta no vault ainda.
@@ -1277,7 +1277,7 @@
 
     function renderNavCards(projetos, pessoas) {
       document.getElementById('home-nav').innerHTML = `
-        <div class="home-section-label" style="margin-top:32px">Explorar</div>
+        <div class="home-section-label">Explorar</div>
         <div class="nav-cards">
           <div class="nav-card" onclick="openListSheet('projetos')">
             <div class="nav-card-label">Projetos</div>
