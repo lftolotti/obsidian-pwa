@@ -332,6 +332,189 @@
       color: var(--label-3); cursor: pointer; padding: 8px; line-height: 0;
     }
 
+    /* ─── Home cards ─────────────────────────────────────────────────── */
+    .home-section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--label-3);
+      margin-bottom: 10px;
+      padding-left: 2px;
+    }
+
+    .home-section { margin-bottom: 32px; }
+
+    .week-card {
+      background: var(--bg-2);
+      border-radius: 16px;
+      border: 0.5px solid var(--glass-b);
+      padding: 18px;
+      position: relative;
+    }
+
+    .week-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--label);
+      margin-bottom: 12px;
+    }
+
+    .week-card-body {
+      font-size: 14px;
+      color: var(--label-2);
+      line-height: 1.65;
+    }
+
+    .week-card-body h2 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--label);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 14px 0 6px;
+    }
+
+    .week-card-body h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--label);
+      margin: 10px 0 4px;
+    }
+
+    .week-card-body ul { padding-left: 16px; }
+    .week-card-body li { margin-bottom: 4px; }
+    .week-card-body strong { color: var(--label); font-weight: 600; }
+    .week-card-body hr { border: none; border-top: 0.5px solid var(--glass-sep); margin: 12px 0; }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--label-3);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+    /* People grid */
+    .people-grid-home {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .person-card {
+      background: var(--bg-2);
+      border-radius: 14px;
+      border: 0.5px solid var(--glass-b);
+      padding: 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+
+    .person-card:active { background: rgba(255,255,255,0.06); }
+
+    .person-card-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--label);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .person-card-role {
+      font-size: 11px;
+      color: var(--label-3);
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .person-card-rel {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--fill-2);
+      color: var(--label-3);
+    }
+
+    .person-card-rel.chefe      { background: rgba(255,69,58,0.12);  color: #ff6b60; }
+    .person-card-rel.liderada,
+    .person-card-rel.liderado   { background: rgba(48,209,88,0.12);  color: #30d158; }
+    .person-card-rel.par        { background: rgba(255,255,255,0.08); color: var(--label-2); }
+    .person-card-rel.stakeholder{ background: rgba(255,214,10,0.10); color: #ffd60a; }
+
+    /* Person detail sheet */
+    .person-sheet {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      align-items: flex-end;
+    }
+
+    .person-sheet.open { display: flex; }
+
+    .person-sheet-inner {
+      background: var(--bg-2);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-height: 80dvh;
+      overflow-y: auto;
+      padding: 20px 20px calc(var(--safe-bot) + 24px);
+      animation: sheetUp 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    @keyframes sheetUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .sheet-handle {
+      width: 36px; height: 4px;
+      background: var(--glass-sep);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    .sheet-name {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .sheet-role {
+      font-size: 14px;
+      color: var(--label-2);
+      margin-bottom: 4px;
+    }
+
+    .sheet-company {
+      font-size: 13px;
+      color: var(--label-3);
+      margin-bottom: 18px;
+    }
+
+    .sheet-body {
+      font-size: 14px;
+      color: var(--label-2);
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
     /* ─── Tab Bar — Floating Glass Pill ─────────────────────────────── */
     .tabbar {
       position: fixed;
@@ -339,8 +522,8 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 200;
-      width: calc(100% - 48px);
-      max-width: 340px;
+      width: calc(100% - 32px);
+      max-width: 380px;
       height: 60px;
       border-radius: 30px;
       background: rgba(30, 30, 36, 0.78);
@@ -440,8 +623,32 @@
 
   <div class="scroll-area" id="scroll-area">
 
+    <!-- ── HOME ────────────────────────────────────────────────── -->
+    <div class="panel active" id="panel-home">
+      <div class="sticky-header" id="header-home">
+        <h1 class="large-title">Home</h1>
+        <button onclick="loadHome()" style="background:none;border:none;color:var(--label-3);font-size:22px;cursor:pointer;padding:8px 0;margin-top:4px;">↻</button>
+      </div>
+
+      <div class="home-section" id="home-semana">
+        <div class="home-section-label">Semana</div>
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          Nenhum relatório ainda.<br>Gere um aqui no terminal com Claude.
+        </div>
+      </div>
+
+      <div class="home-section" id="home-pessoas">
+        <div class="home-section-label">Pessoas</div>
+        <div class="empty-state">
+          <div class="empty-icon">👤</div>
+          Carregando...
+        </div>
+      </div>
+    </div>
+
     <!-- ── NOTA ────────────────────────────────────────────────── -->
-    <div class="panel active" id="panel-nota">
+    <div class="panel" id="panel-nota">
       <form id="form-nota" autocomplete="off">
 
         <div class="sticky-header" id="header-nota">
@@ -655,9 +862,28 @@
     </div>
   </div><!-- /scroll-area -->
 
+  <!-- ── Person sheet ─────────────────────────────────────────── -->
+  <div class="person-sheet" id="person-sheet" onclick="closeSheet(event)">
+    <div class="person-sheet-inner">
+      <div class="sheet-handle"></div>
+      <div class="sheet-name"    id="sheet-name"></div>
+      <div class="sheet-role"    id="sheet-role"></div>
+      <div class="sheet-company" id="sheet-company"></div>
+      <div class="sheet-body"    id="sheet-body"></div>
+    </div>
+  </div>
+
   <!-- ── Tab Bar ───────────────────────────────────────────────── -->
   <nav class="tabbar">
-    <button class="tab-btn active" id="tab-nota" onclick="switchTab('nota')">
+    <button class="tab-btn active" id="tab-home" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      Home
+    </button>
+    <button class="tab-btn" id="tab-nota" onclick="switchTab('nota')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -699,20 +925,135 @@
     const API_BASE = 'https://api.github.com';
 
     let currentFile = null;
-    const TAB_ORDER = ['nota', 'pdf', 'config'];
-    let currentTab  = 'nota';
+    const TAB_ORDER = ['home', 'nota', 'pdf', 'config'];
+    let currentTab  = 'home';
+    let peopleData  = [];
 
     // ── Init ─────────────────────────────────────────────────────────
     async function init() {
       initDateChip();
-
       const tok = localStorage.getItem('gh_token');
       if (tok) {
         document.getElementById('gh-token').value = tok;
         await checkConnection();
+        loadHome();
       } else {
         setStatus('err', 'Token não configurado');
       }
+    }
+
+    // ── Home ──────────────────────────────────────────────────────────
+    async function loadHome() {
+      if (!token()) return;
+      loadWeekCard();
+      loadPeopleCards();
+    }
+
+    async function loadWeekCard() {
+      const el = document.getElementById('home-semana');
+      try {
+        const files = await ghGet(`/repos/${REPO}/contents/SEMANAL`);
+        const mds   = files.filter(f => f.name.endsWith('.md')).sort((a,b) => b.name.localeCompare(a.name));
+        if (!mds.length) return; // keep empty state
+
+        const raw     = await ghGet(`/repos/${REPO}/contents/${enc(mds[0].path)}`);
+        const content = decodeB64(raw.content);
+        const title   = mds[0].name.replace('.md','');
+
+        el.innerHTML = `
+          <div class="home-section-label">Semana</div>
+          <div class="week-card">
+            <div class="week-card-title">${title}</div>
+            <div class="week-card-body">${mdToHtml(stripFrontmatter(content))}</div>
+          </div>`;
+      } catch {}
+    }
+
+    async function loadPeopleCards() {
+      const el = document.getElementById('home-pessoas');
+      try {
+        const files = await ghGet(`/repos/${REPO}/contents/PESSOAS`);
+        const mds   = files.filter(f => f.type==='file' && f.name.endsWith('.md') && !f.name.startsWith('Exemplo'));
+
+        const people = await Promise.all(mds.map(async f => {
+          const raw     = await ghGet(`/repos/${REPO}/contents/${enc(f.path)}`);
+          const content = decodeB64(raw.content);
+          const fm      = parseFrontmatter(content);
+          const ctx     = parseSection(content, 'Contexto');
+          return { name: f.name.replace('.md',''), fm, ctx, raw: content };
+        }));
+
+        peopleData = people;
+
+        el.innerHTML = `
+          <div class="home-section-label">Pessoas</div>
+          <div class="people-grid-home">
+            ${people.map((p,i) => `
+              <div class="person-card" onclick="openSheet(${i})">
+                <div class="person-card-name">${p.name}</div>
+                <div class="person-card-role">${p.fm.cargo || ''}</div>
+                <span class="person-card-rel ${(p.fm.relacao||'').toLowerCase().replace(/\s+/g,'-')}">${p.fm.relacao || '—'}</span>
+              </div>`).join('')}
+          </div>`;
+      } catch(e) {
+        el.innerHTML = `<div class="home-section-label">Pessoas</div><div class="empty-state"><div class="empty-icon">⚠️</div>Erro ao carregar</div>`;
+      }
+    }
+
+    // ── Person sheet ──────────────────────────────────────────────────
+    function openSheet(i) {
+      haptic(6);
+      const p = peopleData[i];
+      document.getElementById('sheet-name').textContent    = p.name;
+      document.getElementById('sheet-role').textContent    = p.fm.cargo || '';
+      document.getElementById('sheet-company').textContent = p.fm.empresa || '';
+      document.getElementById('sheet-body').textContent    = p.ctx || 'Sem contexto registrado.';
+      document.getElementById('person-sheet').classList.add('open');
+    }
+
+    function closeSheet(e) {
+      if (e.target === document.getElementById('person-sheet'))
+        document.getElementById('person-sheet').classList.remove('open');
+    }
+
+    // ── Markdown & parsing helpers ────────────────────────────────────
+    function decodeB64(b64) {
+      return decodeURIComponent(escape(atob(b64.replace(/\n/g,''))));
+    }
+
+    function stripFrontmatter(md) {
+      return md.replace(/^---[\s\S]*?---\n/, '').trim();
+    }
+
+    function parseFrontmatter(content) {
+      const match = content.match(/^---\n([\s\S]*?)\n---/);
+      if (!match) return {};
+      const result = {};
+      match[1].split('\n').forEach(line => {
+        const idx = line.indexOf(':');
+        if (idx > 0) result[line.slice(0,idx).trim()] = line.slice(idx+1).trim().replace(/^["']|["']$/g,'');
+      });
+      return result;
+    }
+
+    function parseSection(content, heading) {
+      const re = new RegExp(`## ${heading}\\n([\\s\\S]*?)(?=\\n## |$)`);
+      const m  = content.match(re);
+      return m ? m[1].trim() : '';
+    }
+
+    function mdToHtml(md) {
+      return md
+        .replace(/^#### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^### (.+)$/gm,  '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm,   '<h2>$1</h2>')
+        .replace(/^---$/gm,       '<hr>')
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+        .replace(/^[-•] (.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
+        .replace(/(<\/ul>)\s*(<ul>)/g, '')
+        .replace(/^(?!<[huhl])/gm, '')
+        .trim();
     }
 
     // ── Date chip ────────────────────────────────────────────────────
