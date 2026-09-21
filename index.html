@@ -91,26 +91,38 @@
       z-index: 200;
       height: calc(var(--topbar-h) + var(--safe-top));
       padding-top: var(--safe-top);
-      border-bottom: 0.5px solid var(--glass-border);
+      border-bottom: 0.5px solid transparent;
       display: flex;
       align-items: flex-end;
-      padding-bottom: 10px;
+      padding-bottom: 11px;
       padding-left: 20px;
       padding-right: 20px;
+      transition: border-color var(--t);
+    }
+
+    .topbar.scrolled {
+      border-bottom-color: var(--glass-border);
     }
 
     .topbar-content {
       display: flex;
-      align-items: baseline;
-      gap: 10px;
+      align-items: center;
       width: 100%;
     }
 
     .topbar-title {
       font-size: 17px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
       color: var(--label);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .topbar-title.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .topbar-status {
@@ -121,6 +133,17 @@
       display: flex;
       align-items: center;
       gap: 5px;
+    }
+
+    /* ─── Large Title (HIG) ──────────────────────────────────────────── */
+    .large-title {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--label);
+      padding: 8px 0 4px;
+      margin-bottom: 24px;
+      line-height: 1.1;
     }
 
     .status-dot {
@@ -149,16 +172,29 @@
       padding-right: 16px;
     }
 
-    /* ─── Panels ─────────────────────────────────────────────────────── */
+    /* ─── Panels — iOS slide transition ─────────────────────────────── */
     .panel {
       display: none;
-      animation: panelIn var(--t-slow) ease;
+      will-change: transform, opacity;
     }
-    .panel.active { display: block; }
+    .panel.active {
+      display: block;
+      animation: slideIn 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+    .panel.slide-left  { animation-name: slideInLeft; }
+    .panel.slide-right { animation-name: slideInRight; }
 
-    @keyframes panelIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(28px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(-28px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(0) scale(0.98); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
     }
 
     /* ─── Section (iOS Grouped Inset) ────────────────────────────────── */
@@ -557,7 +593,7 @@
   <!-- ── Top Bar ───────────────────────────────────────────────── -->
   <nav class="topbar glass">
     <div class="topbar-content">
-      <span class="topbar-title">Segundo Cérebro</span>
+      <span class="topbar-title" id="nav-title">Nova Nota</span>
       <div class="topbar-status">
         <div class="status-dot pending" id="status-dot"></div>
         <span id="status-text">Conectando...</span>
@@ -570,6 +606,7 @@
 
     <!-- ── Panel: Nota ─────────────────────────────────────────── -->
     <div class="panel active" id="panel-nota">
+      <div class="large-title" data-nav-title="Nova Nota">Nova Nota</div>
       <form id="form-nota" autocomplete="off">
 
         <div class="section">
@@ -651,6 +688,7 @@
 
     <!-- ── Panel: Enviar ────────────────────────────────────────── -->
     <div class="panel" id="panel-pdf">
+      <div class="large-title" data-nav-title="Enviar Arquivo">Enviar Arquivo</div>
       <form id="form-pdf" autocomplete="off">
 
         <div class="section">
@@ -721,6 +759,7 @@
 
     <!-- ── Panel: Config ────────────────────────────────────────── -->
     <div class="panel" id="panel-config">
+      <div class="large-title" data-nav-title="Configurações">Configurações</div>
 
       <div class="status-card">
         <div class="status-dot pending" id="status-dot-config"></div>
@@ -943,6 +982,7 @@
     }
 
     function togglePerson(name, tab) {
+      haptic(6);
       const sel = tab === 'nota' ? selNota : selPdf;
       sel.has(name) ? sel.delete(name) : sel.add(name);
       renderChips(`people-${tab}`, tab);
@@ -1093,13 +1133,60 @@
       document.getElementById('nota-custom-wrap').classList.toggle('show', this.value === 'custom');
     });
 
-    // ── Tab switching ────────────────────────────────────────────────
+    // ── Tab switching — with slide direction ─────────────────────────
+    const TAB_ORDER = ['nota', 'pdf', 'config'];
+    let currentTab = 'nota';
+
     function switchTab(tab) {
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      if (tab === currentTab) return;
+      haptic(8);
+
+      const fromIdx = TAB_ORDER.indexOf(currentTab);
+      const toIdx   = TAB_ORDER.indexOf(tab);
+      const dir     = toIdx > fromIdx ? 'slide-left' : 'slide-right';
+
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active', 'slide-left', 'slide-right'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`panel-${tab}`).classList.add('active');
+
+      const panel = document.getElementById(`panel-${tab}`);
+      panel.classList.add('active', dir);
       document.getElementById(`tab-${tab}`).classList.add('active');
-      document.querySelector('.scroll-area').scrollTo({ top: 0, behavior: 'smooth' });
+
+      currentTab = tab;
+      document.querySelector('.scroll-area').scrollTop = 0;
+
+      // Update nav title
+      const largeTitle = panel.querySelector('.large-title');
+      const navTitle   = document.getElementById('nav-title');
+      if (largeTitle && navTitle) {
+        navTitle.textContent = largeTitle.dataset.navTitle || '';
+        navTitle.classList.remove('visible');
+      }
+    }
+
+    // ── Large title scroll collapse ──────────────────────────────────
+    function initScrollCollapse() {
+      const scrollArea = document.querySelector('.scroll-area');
+      const topbar     = document.querySelector('.topbar');
+      const navTitle   = document.getElementById('nav-title');
+
+      scrollArea.addEventListener('scroll', () => {
+        const activePanel = document.querySelector('.panel.active');
+        const largeTitle  = activePanel?.querySelector('.large-title');
+        if (!largeTitle) return;
+
+        const titleBottom = largeTitle.getBoundingClientRect().bottom;
+        const navBottom   = topbar.getBoundingClientRect().bottom;
+        const collapsed   = titleBottom <= navBottom;
+
+        navTitle.classList.toggle('visible', collapsed);
+        topbar.classList.toggle('scrolled', scrollArea.scrollTop > 4);
+      }, { passive: true });
+    }
+
+    // ── Haptic feedback ──────────────────────────────────────────────
+    function haptic(ms = 10) {
+      if (navigator.vibrate) navigator.vibrate(ms);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
@@ -1128,6 +1215,7 @@
     }
 
     init();
+    initScrollCollapse();
   </script>
 </body>
 </html>
