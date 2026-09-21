@@ -627,7 +627,7 @@
     <div class="panel active" id="panel-home">
       <div class="sticky-header" id="header-home">
         <h1 class="large-title">Home</h1>
-        <button onclick="loadHome()" style="background:none;border:none;color:var(--label-3);font-size:22px;cursor:pointer;padding:8px 0;margin-top:4px;">↻</button>
+        <button onclick="loadHome(true)" style="background:none;border:none;color:var(--label-3);font-size:22px;cursor:pointer;padding:8px 0;margin-top:4px;">↻</button>
       </div>
 
       <div class="home-section" id="home-semana">
@@ -943,10 +943,13 @@
     }
 
     // ── Home ──────────────────────────────────────────────────────────
-    async function loadHome() {
+    const PEOPLE_CACHE_KEY = 'cerebro_pessoas_v1';
+    const PEOPLE_CACHE_TTL = 60 * 60 * 1000; // 1h
+
+    async function loadHome(forceRefresh = false) {
       if (!token()) return;
       loadWeekCard();
-      loadPeopleCards();
+      loadPeopleCards(forceRefresh);
     }
 
     async function loadWeekCard() {
@@ -954,7 +957,7 @@
       try {
         const files = await ghGet(`/repos/${REPO}/contents/SEMANAL`);
         const mds   = files.filter(f => f.name.endsWith('.md')).sort((a,b) => b.name.localeCompare(a.name));
-        if (!mds.length) return; // keep empty state
+        if (!mds.length) return;
 
         const raw     = await ghGet(`/repos/${REPO}/contents/${enc(mds[0].path)}`);
         const content = decodeB64(raw.content);
@@ -969,35 +972,75 @@
       } catch {}
     }
 
-    async function loadPeopleCards() {
+    async function loadPeopleCards(forceRefresh = false) {
       const el = document.getElementById('home-pessoas');
+
+      // 1. Serve cache instantly if fresh
+      if (!forceRefresh) {
+        const cached = getCachedPeople();
+        if (cached) {
+          peopleData = cached;
+          renderPeopleGrid(el, cached);
+          return;
+        }
+      }
+
+      // 2. Fetch directory listing — fast, 1 call
+      let mds;
       try {
         const files = await ghGet(`/repos/${REPO}/contents/PESSOAS`);
-        const mds   = files.filter(f => f.type==='file' && f.name.endsWith('.md') && !f.name.startsWith('Exemplo'));
+        mds = files.filter(f => f.type==='file' && f.name.endsWith('.md') && !f.name.startsWith('Exemplo'));
+      } catch {
+        el.innerHTML = `<div class="home-section-label">Pessoas</div><div class="empty-state"><div class="empty-icon">⚠️</div>Erro ao carregar</div>`;
+        return;
+      }
 
-        const people = await Promise.all(mds.map(async f => {
+      // 3. Render skeleton cards immediately from filenames
+      const skeleton = mds.map(f => ({ name: f.name.replace('.md',''), fm: {}, ctx: '', path: f.path }));
+      peopleData = skeleton;
+      renderPeopleGrid(el, skeleton);
+
+      // 4. Fetch all file contents in parallel (background)
+      const people = await Promise.all(mds.map(async (f, i) => {
+        try {
           const raw     = await ghGet(`/repos/${REPO}/contents/${enc(f.path)}`);
           const content = decodeB64(raw.content);
-          const fm      = parseFrontmatter(content);
-          const ctx     = parseSection(content, 'Contexto');
-          return { name: f.name.replace('.md',''), fm, ctx, raw: content };
-        }));
+          return { name: f.name.replace('.md',''), fm: parseFrontmatter(content), ctx: parseSection(content, 'Contexto'), path: f.path };
+        } catch {
+          return skeleton[i];
+        }
+      }));
 
-        peopleData = people;
+      // 5. Update UI + cache
+      peopleData = people;
+      renderPeopleGrid(el, people);
+      cachePeople(people);
+    }
 
-        el.innerHTML = `
-          <div class="home-section-label">Pessoas</div>
-          <div class="people-grid-home">
-            ${people.map((p,i) => `
-              <div class="person-card" onclick="openSheet(${i})">
-                <div class="person-card-name">${p.name}</div>
-                <div class="person-card-role">${p.fm.cargo || ''}</div>
-                <span class="person-card-rel ${(p.fm.relacao||'').toLowerCase().replace(/\s+/g,'-')}">${p.fm.relacao || '—'}</span>
-              </div>`).join('')}
-          </div>`;
-      } catch(e) {
-        el.innerHTML = `<div class="home-section-label">Pessoas</div><div class="empty-state"><div class="empty-icon">⚠️</div>Erro ao carregar</div>`;
-      }
+    function renderPeopleGrid(el, people) {
+      el.innerHTML = `
+        <div class="home-section-label">Pessoas</div>
+        <div class="people-grid-home">
+          ${people.map((p,i) => `
+            <div class="person-card" onclick="openSheet(${i})">
+              <div class="person-card-name">${p.name}</div>
+              <div class="person-card-role">${p.fm.cargo || ''}</div>
+              <span class="person-card-rel ${(p.fm.relacao||'').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z-]/g,'')}">${p.fm.relacao || '—'}</span>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    function getCachedPeople() {
+      try {
+        const raw = localStorage.getItem(PEOPLE_CACHE_KEY);
+        if (!raw) return null;
+        const { data, ts } = JSON.parse(raw);
+        return (Date.now() - ts < PEOPLE_CACHE_TTL) ? data : null;
+      } catch { return null; }
+    }
+
+    function cachePeople(data) {
+      try { localStorage.setItem(PEOPLE_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch {}
     }
 
     // ── Person sheet ──────────────────────────────────────────────────
