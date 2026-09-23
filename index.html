@@ -9,6 +9,9 @@
   <title>Segundo Cérebro</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#000000">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
   <style>
     /* ─── Tokens ────────────────────────────────────────────────────── */
     :root {
@@ -30,6 +33,19 @@
       --safe-bot: env(safe-area-inset-bottom, 0px);
       --t:       180ms cubic-bezier(0.4, 0, 0.2, 1);
       --t-s:     420ms cubic-bezier(0.34, 1.46, 0.64, 1);
+    }
+
+    /* ─── Material Symbols ──────────────────────────────────────────── */
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      display: inline-block;
+      line-height: 1;
+      vertical-align: middle;
+      white-space: nowrap;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ─── Reset ─────────────────────────────────────────────────────── */
@@ -501,7 +517,7 @@
 
     .ai-icon {
       flex-shrink: 0;
-      font-size: 13px;
+      font-size: 15px;
       line-height: 1.4;
       color: #bf5af2;
     }
@@ -1012,7 +1028,7 @@
     <div class="panel active" id="panel-home">
       <div class="home-toprow">
         <h1 class="large-title">Home</h1>
-        <button onclick="loadHome(true)" class="refresh-btn">↻</button>
+        <button onclick="loadHome(true)" class="refresh-btn"><span class="material-symbols-outlined">refresh</span></button>
       </div>
       <div id="home-nav"></div>
       <div id="home-todos"></div>
@@ -1169,7 +1185,7 @@
               accept=".pdf,.md,.txt,.png,.jpg,.jpeg"
               multiple
               onchange="onFileChange(this)">
-            <div class="file-drop-icon">📎</div>
+            <div class="file-drop-icon"><span class="material-symbols-outlined" style="font-size:28px">attach_file</span></div>
             <div class="file-drop-text" id="file-drop-text">Toque para selecionar</div>
             <div class="file-drop-hint">PDF, MD, TXT, imagem</div>
           </div>
@@ -1351,12 +1367,12 @@
         _homeData = payload;
         renderHome(payload);
       } catch(e) {
-        setHomePlaceholder('Erro ao carregar — toque ↻ pra tentar de novo');
+        setHomePlaceholder('Erro ao carregar — toque em <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">refresh</span> pra tentar de novo');
       }
     }
 
     function setHomePlaceholder(msg) {
-      document.getElementById('home-todos').innerHTML = `<div class="empty-state"><div class="empty-icon">🧠</div>${msg}</div>`;
+      document.getElementById('home-todos').innerHTML = `<div class="empty-state"><div class="empty-icon material-symbols-outlined" style="font-size:36px">psychology</div>${msg}</div>`;
       document.getElementById('home-nav').innerHTML   = '';
     }
 
@@ -1509,7 +1525,7 @@
     }
 
     function todoCardHtml(t) {
-      const aiIcon = t.origin === 'insight' ? '<span class="ai-icon" title="Insight de reunião/nota">✦</span>' : '';
+      const aiIcon = t.origin === 'insight' ? '<span class="ai-icon material-symbols-outlined" title="Insight de reunião/nota">auto_awesome</span>' : '';
       return `
         <div class="todo-card" onclick="toggleTodo(this, '${escJs(t.id)}')">
           <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}"></div>
@@ -1535,7 +1551,7 @@
         el.innerHTML = `
           <div class="home-section-label">TO DOs</div>
           <div class="empty-state" style="padding:24px 0">
-            <div class="empty-icon">✅</div>
+            <div class="empty-icon material-symbols-outlined" style="font-size:36px">task_alt</div>
             Nenhuma tarefa aberta no vault ainda.
           </div>`;
         return;
@@ -1557,7 +1573,7 @@
           ${group('Insights', insights)}
         ` : `
           <div class="empty-state" style="padding:20px 0">
-            <div class="empty-icon">🔍</div>
+            <div class="empty-icon material-symbols-outlined" style="font-size:36px">search_off</div>
             Nada por aqui com esse filtro.
           </div>`}`;
     }
@@ -1568,12 +1584,12 @@
           <div class="nav-card" onclick="openListSheet('projetos')">
             <div class="nav-card-label">Projetos</div>
             <div class="nav-card-count">${projetos?.length || 0}</div>
-            <div class="nav-card-arrow">→</div>
+            <div class="nav-card-arrow material-symbols-outlined" style="font-size:16px">arrow_forward</div>
           </div>
           <div class="nav-card" onclick="openListSheet('pessoas')">
             <div class="nav-card-label">Pessoas</div>
             <div class="nav-card-count">${pessoas?.length || 0}</div>
-            <div class="nav-card-arrow">→</div>
+            <div class="nav-card-arrow material-symbols-outlined" style="font-size:16px">arrow_forward</div>
           </div>
         </div>`;
     }
@@ -1602,10 +1618,10 @@
               <div class="sheet-list-item-main">
                 <div class="sheet-list-item-name">${item.name}</div>
                 <div class="sheet-list-item-sub">${isProj
-                  ? (item.open ? `${item.open} task${item.open>1?'s':''} abertas` : item.done ? '✓ Finalizado' : 'Sem tasks')
+                  ? (item.open ? `${item.open} task${item.open>1?'s':''} abertas` : item.done ? '<span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px;color:var(--green)">check_circle</span> Finalizado' : 'Sem tasks')
                   : (item.fm?.cargo || '')}</div>
               </div>
-              <span class="sheet-list-chevron">›</span>
+              <span class="sheet-list-chevron material-symbols-outlined" style="font-size:18px">chevron_right</span>
             </div>`).join('')}`;
 
       document.getElementById('person-sheet').classList.add('open');
@@ -1618,11 +1634,11 @@
       if (!item) return;
 
       const meta = isProj
-        ? `${item.open ? item.open + ' tasks abertas' : item.done ? '✓ Finalizado' : 'Sem tasks'} · ${item.fm?.area || 'Projeto'}`
+        ? `${item.open ? item.open + ' tasks abertas' : item.done ? '<span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px;color:var(--green)">check_circle</span> Finalizado' : 'Sem tasks'} · ${item.fm?.area || 'Projeto'}`
         : `${item.fm?.cargo || ''} · ${item.fm?.empresa || ''}`;
 
       document.getElementById('sheet-dynamic').innerHTML = `
-        <div class="sheet-back" onclick="openListSheet('${type}')">‹ Voltar</div>
+        <div class="sheet-back" onclick="openListSheet('${type}')"><span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Voltar</div>
         <div class="sheet-detail-name">${item.name}</div>
         <div class="sheet-detail-role">${isProj ? (item.fm?.area || 'Projeto') : (item.fm?.relacao || '')}</div>
         <div class="sheet-detail-meta">${meta}</div>
@@ -1812,7 +1828,7 @@
 
     // ── Categoria custom dropdown ─────────────────────────────────────
     const CAT_OPTIONS = [
-      { value: 'NOTAS',        label: 'NOTAS',        icon: '📝', pinned: true },
+      { value: 'NOTAS',        label: 'NOTAS',        icon: '<span class="material-symbols-outlined" style="font-size:16px">description</span>', pinned: true },
       { divider: true },
       { value: 'APRENDIZADOS', label: 'APRENDIZADOS' },
       { value: 'AREAS',        label: 'AREAS' },
@@ -1910,7 +1926,7 @@
           <div class="pessoa-option ${name === pessoaSelected ? 'selected' : ''}"
                onclick="selectPessoa('${safe}')">
             ${name}
-            <span class="check">✓</span>
+            <span class="check material-symbols-outlined" style="font-size:16px">check</span>
           </div>`;
       }).join('');
     }
@@ -1965,16 +1981,16 @@
       drop.classList.add('has-file');
       txt.textContent = '+ Adicionar mais';
 
-      const icons = { pdf: '📄', md: '📝', txt: '📄', png: '🖼', jpg: '🖼', jpeg: '🖼', default: '📎' };
+      const icons = { pdf: 'picture_as_pdf', md: 'description', txt: 'article', png: 'image', jpg: 'image', jpeg: 'image', default: 'attach_file' };
 
       el.innerHTML = currentFiles.map((f, i) => {
         const ext  = f.name.split('.').pop().toLowerCase();
         const icon = icons[ext] || icons.default;
         return `
           <div class="file-chip">
-            <span class="file-chip-icon">${icon}</span>
+            <span class="file-chip-icon material-symbols-outlined" style="font-size:15px">${icon}</span>
             <span class="file-chip-name">${f.name}</span>
-            <button type="button" class="file-chip-remove" onclick="removeFile(${i})">×</button>
+            <button type="button" class="file-chip-remove" onclick="removeFile(${i})"><span class="material-symbols-outlined" style="font-size:14px">close</span></button>
           </div>`;
       }).join('');
     }
@@ -1998,7 +2014,7 @@
           message: `📝 ${titulo}`, content: toB64(md)
         });
 
-        showToast('Nota salva! ✓', 'success');
+        showToast('Nota salva!', 'success');
         document.getElementById('nota-titulo').value  = '';
         document.getElementById('nota-conteudo').value = '';
       } catch (err) {
@@ -2066,7 +2082,7 @@
         }).catch(() => {});
 
         const plural = currentFiles.length > 1 ? `${currentFiles.length} arquivos enviados` : 'Arquivo enviado';
-        showToast(`${plural}! ✓`, 'success');
+        showToast(`${plural}!`, 'success');
         currentFiles   = [];
         pessoaSelected = null;
         document.getElementById('pdf-titulo').value    = '';
