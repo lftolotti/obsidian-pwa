@@ -1418,7 +1418,7 @@
     }
 
     // ── Home ─────────────────────────────────────────────────────────
-    const CACHE_KEY = 'cerebro_home_v4';
+    const CACHE_KEY = 'cerebro_home_v5';
     const CACHE_TTL = 60 * 60 * 1000;
 
     // Rank de relação para ordenar pessoas nos TO DOs
@@ -1452,7 +1452,7 @@
 
         const pessoas  = parsePessoas(data);
         const projetos = parseProjetos(data);
-        const todos    = extractTodos(data, pessoas, projetos);
+        const todos    = extractTodos(data, pessoas);
         const payload  = { pessoas, projetos, todos };
         setHomeCache(payload);
         _homeData = payload;
@@ -1495,7 +1495,18 @@
     // Tarefas de PROJETOS/ são compromissos formais do projeto (herdam o prazo
     // do frontmatter). Tarefas de REUNIOES/ e NOTAS/ são insights/action items
     // soltos que surgem de conversas e capturas rápidas — sem prazo formal.
-    function extractTodos(data, pessoas, projetos) {
+    // Data no fim da própria linha do TO DO (ex: "... — 28/09/2026"), não a
+    // do projeto inteiro — uma tarefa desta semana não pode herdar o prazo
+    // de dezembro do projeto só porque mora no mesmo arquivo.
+    function extractTaskDate(text) {
+      const m = text.match(/\s*[—-]\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*$/);
+      if (!m) return { text, prazo: null };
+      const [, d, mo, y] = m;
+      const prazo = `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+      return { text: text.slice(0, m.index).trim(), prazo };
+    }
+
+    function extractTodos(data, pessoas) {
       const todos     = [];
       const pessoaNames = pessoas.map(p => p.name);
       const sources   = ['projetos','reunioes','notas'];
@@ -1506,11 +1517,11 @@
           const lines     = e.object.text.split('\n');
           const srcLabel  = e.name.replace('.md','').replace(/^\d{4}-\d{2}-\d{2} - /,'');
           const origin    = src === 'projetos' ? 'task' : 'insight';
-          const prazo     = origin === 'task' ? (projetos.find(p => p.name === srcLabel)?.fm.prazo || null) : null;
 
           lines.forEach((line, i) => {
             if (!/^- \[ \]/.test(line)) return;
-            const text = line.replace(/^- \[ \]\s*/,'').trim();
+            const raw = line.replace(/^- \[ \]\s*/,'').trim();
+            const { text, prazo } = extractTaskDate(raw);
 
             // Busca menções [[Pessoa]] em contexto ±5 linhas
             const ctx = lines.slice(Math.max(0,i-5), i+6).join('\n');
