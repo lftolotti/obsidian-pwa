@@ -1766,10 +1766,50 @@
         </div>`;
     }
 
-    function toggleTodo(id) {
+    // Pasta real no repo por trás de cada "src" usado no id do TO DO
+    const SRC_FOLDER = { projetos: 'PROJETOS', reunioes: 'REUNIOES', notas: 'NOTAS' };
+
+    function fromB64(b64) {
+      return decodeURIComponent(escape(atob(b64.replace(/\n/g, ''))));
+    }
+
+    // Reabre o arquivo original, troca só a linha do TO DO (- [ ] <-> - [x])
+    // e grava de volta — o check no PWA passa a ser uma edição real do vault,
+    // não só um estado da sessão do navegador.
+    async function persistTodoToggle(id, done) {
+      const [src, lineIdxStr, ...rest] = id.split(':');
+      const fileName = rest.join(':');
+      const lineIdx  = parseInt(lineIdxStr, 10);
+      const path     = `${SRC_FOLDER[src]}/${fileName}`;
+
+      const file  = await ghGet(`/repos/${REPO}/contents/${enc(path)}`);
+      const lines = fromB64(file.content).split('\n');
+
+      if (!/^- \[[ xX]\]/.test(lines[lineIdx] || '')) {
+        throw new Error('O arquivo mudou desde o último carregamento — dá um ↻ e tenta de novo');
+      }
+      lines[lineIdx] = lines[lineIdx].replace(/^- \[[ xX]\]/, done ? '- [x]' : '- [ ]');
+
+      await ghPutFile(path, {
+        message: `${done ? 'Conclui' : 'Reabre'} TO DO em ${fileName}`,
+        content: toB64(lines.join('\n')),
+        sha: file.sha
+      });
+    }
+
+    async function toggleTodo(id) {
       haptic(6);
-      _checkedTodos.has(id) ? _checkedTodos.delete(id) : _checkedTodos.add(id);
+      const done = !_checkedTodos.has(id);
+      done ? _checkedTodos.add(id) : _checkedTodos.delete(id);
       renderTodos(_homeData?.todos || []);
+
+      try {
+        await persistTodoToggle(id, done);
+      } catch (err) {
+        done ? _checkedTodos.delete(id) : _checkedTodos.add(id);
+        renderTodos(_homeData?.todos || []);
+        showToast(err.message || 'Não deu pra salvar — tenta de novo', 'error');
+      }
     }
 
     function toggleDoneExpanded() {
