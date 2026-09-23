@@ -486,11 +486,24 @@
 
     .todo-body { flex: 1; min-width: 0; }
 
+    .todo-text-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
     .todo-text {
       font-size: 15px;
       color: var(--label);
       line-height: 1.4;
-      margin-bottom: 8px;
+    }
+
+    .ai-icon {
+      flex-shrink: 0;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #bf5af2;
     }
 
     .todo-text.done {
@@ -1299,7 +1312,7 @@
     }
 
     // ── Home ─────────────────────────────────────────────────────────
-    const CACHE_KEY = 'cerebro_home_v3';
+    const CACHE_KEY = 'cerebro_home_v4';
     const CACHE_TTL = 60 * 60 * 1000;
 
     // Rank de relação para ordenar pessoas nos TO DOs
@@ -1496,11 +1509,15 @@
     }
 
     function todoCardHtml(t) {
+      const aiIcon = t.origin === 'insight' ? '<span class="ai-icon" title="Insight de reunião/nota">✦</span>' : '';
       return `
         <div class="todo-card" onclick="toggleTodo(this, '${escJs(t.id)}')">
           <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}"></div>
           <div class="todo-body">
-            <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${t.text}</div>
+            <div class="todo-text-row">
+              ${aiIcon}
+              <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${t.text}</div>
+            </div>
             <div class="todo-tags">
               <span class="todo-tag project">${t.source}</span>
               ${t.prazo ? `<span class="todo-tag prazo">prazo ${fmtPrazo(t.prazo)}</span>` : ''}
