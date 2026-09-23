@@ -54,13 +54,15 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    html { height: 100%; }
+    html { height: 100%; height: -webkit-fill-available; }
 
     body {
       background: var(--bg);
       color: var(--label);
       font-family: var(--font);
+      height: 100vh;
       height: 100dvh;
+      min-height: -webkit-fill-available;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -976,7 +978,7 @@
     /* ─── Tab Bar — Floating Glass Pill ─────────────────────────────── */
     .tabbar {
       position: fixed;
-      bottom: 32px;
+      bottom: calc(20px + var(--safe-bot));
       left: 50%;
       transform: translateX(-50%);
       z-index: 200;
