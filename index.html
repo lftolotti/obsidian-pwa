@@ -566,6 +566,31 @@
       color: var(--label-3);
     }
 
+    .todo-card.done {
+      background: rgba(48,209,88,0.06);
+      border-color: rgba(48,209,88,0.2);
+    }
+
+    /* ─── Concluídos (resumo colapsável) ─────────────────────────────── */
+    .done-summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(48,209,88,0.08);
+      border: 0.5px solid rgba(48,209,88,0.22);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      color: var(--green);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .done-summary .material-symbols-outlined { font-size: 18px; }
+    .done-summary-count { flex: 1; }
+
     .todo-tags { display: flex; flex-wrap: wrap; gap: 5px; }
 
     .todo-tag {
@@ -1429,6 +1454,7 @@
     let _activeFilter = null;   // { type: 'person'|'project', value: string } | null
     let _filterCategory = null; // 'person' | 'project' | null — categoria aberta na barra de filtro
     let _activeGroup = 'task';  // 'task' | 'insight' — aba ativa abaixo dos filtros
+    let _doneExpanded = false;  // mostra/esconde os itens dentro do card de concluídos
 
     async function loadHome(forceRefresh = false) {
       if (!token()) { setHomePlaceholder('Configure o token em Config'); return; }
@@ -1648,17 +1674,18 @@
     }
 
     function todoCardHtml(t) {
+      const isDone = _checkedTodos.has(t.id);
       const aiIcon = t.origin === 'insight' ? '<span class="ai-icon material-symbols-outlined" title="Insight de reunião/nota">auto_awesome</span>' : '';
       const prazoTitle = t.prazo ? `<div class="todo-prazo-title">${fmtPrazo(t.prazo)}</div>` : '';
       return `
-        <div class="todo-card" onclick="toggleTodo(this, '${escJs(t.id)}')">
+        <div class="todo-card${isDone ? ' done' : ''}" onclick="toggleTodo('${escJs(t.id)}')">
           ${prazoTitle}
           <div class="todo-card-row">
-            <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}"></div>
+            <div class="radio-btn${isDone ? ' checked' : ''}"></div>
             <div class="todo-body">
               <div class="todo-text-row">
                 ${aiIcon}
-                <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${formatTodoText(t.text)}</div>
+                <div class="todo-text${isDone ? ' done' : ''}">${formatTodoText(t.text)}</div>
               </div>
               <div class="todo-tags">
                 <span class="todo-tag project">${t.source}</span>
@@ -1686,12 +1713,22 @@
       const tasks     = filtered.filter(t => t.origin === 'task').sort(byPrazoAsc);
       const insights  = filtered.filter(t => t.origin === 'insight');
       const active    = _activeGroup === 'insight' ? insights : tasks;
+      const pending   = active.filter(t => !_checkedTodos.has(t.id));
+      const done      = active.filter(t => _checkedTodos.has(t.id));
 
       const tab = (group, label, icon) => `
         <button class="group-tab${_activeGroup === group ? ' active' : ''}" onclick="setActiveGroup('${group}')">
           <span class="material-symbols-outlined">${icon}</span>
           ${label}
         </button>`;
+
+      const doneSummary = !done.length ? '' : `
+        <div class="done-summary" onclick="toggleDoneExpanded()">
+          <span class="material-symbols-outlined">check_circle</span>
+          <span class="done-summary-count">${done.length} concluído${done.length > 1 ? 's' : ''}</span>
+          <span class="material-symbols-outlined">${_doneExpanded ? 'expand_less' : 'expand_more'}</span>
+        </div>
+        ${_doneExpanded ? done.map(todoCardHtml).join('') : ''}`;
 
       el.innerHTML = `
         <div class="todo-sticky-bar">
@@ -1701,11 +1738,12 @@
             ${tab('insight', 'Insights', 'auto_awesome')}
           </div>
         </div>
-        ${active.length ? active.map(todoCardHtml).join('') : `
+        ${pending.length ? pending.map(todoCardHtml).join('') : (done.length ? '' : `
           <div class="empty-state" style="padding:20px 0">
             <div class="empty-icon material-symbols-outlined" style="font-size:32px">${_activeGroup === 'insight' ? 'auto_awesome' : 'task_alt'}</div>
             Nenhum${_activeGroup === 'insight' ? ' insight' : 'a tarefa'} por aqui.
-          </div>`}`;
+          </div>`)}
+        ${doneSummary}`;
     }
 
     function renderNavCards(projetos, pessoas) {
@@ -1728,11 +1766,16 @@
         </div>`;
     }
 
-    function toggleTodo(cardEl, id) {
+    function toggleTodo(id) {
       haptic(6);
       _checkedTodos.has(id) ? _checkedTodos.delete(id) : _checkedTodos.add(id);
-      cardEl.querySelector('.radio-btn')?.classList.toggle('checked');
-      cardEl.querySelector('.todo-text')?.classList.toggle('done');
+      renderTodos(_homeData?.todos || []);
+    }
+
+    function toggleDoneExpanded() {
+      haptic(4);
+      _doneExpanded = !_doneExpanded;
+      renderTodos(_homeData?.todos || []);
     }
 
     // ── Sheet navigation ──────────────────────────────────────────────
