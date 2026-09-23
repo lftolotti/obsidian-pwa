@@ -571,30 +571,42 @@
     /* ─── Tarefas / Insights tabs ────────────────────────────────────── */
     .group-tabs {
       display: flex;
-      gap: 8px;
-      margin: 0 2px 14px;
+      margin: 4px 2px 16px;
+      border-bottom: 0.5px solid var(--glass-sep);
     }
 
     .group-tab {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
       font-family: var(--font);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      color: var(--label-2);
-      background: var(--fill-2);
-      border: 0.5px solid var(--glass-b);
-      border-radius: 12px;
-      padding: 10px 0;
-      text-align: center;
+      color: var(--label-3);
+      padding: 2px 0 10px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: background var(--t), color var(--t);
+      position: relative;
+      transition: color var(--t);
     }
 
-    .group-tab.active {
-      background: var(--label);
-      color: #000;
-      border-color: transparent;
+    .group-tab .material-symbols-outlined { font-size: 20px; }
+
+    .group-tab.active { color: #bf5af2; }
+
+    .group-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -0.5px;
+      left: 30%;
+      right: 30%;
+      height: 2px;
+      border-radius: 2px;
+      background: #bf5af2;
     }
 
     .filter-chip {
@@ -1611,17 +1623,18 @@
       const insights  = filtered.filter(t => t.origin === 'insight');
       const active    = _activeGroup === 'insight' ? insights : tasks;
 
-      const tab = (group, label, count) => `
+      const tab = (group, label, icon) => `
         <button class="group-tab${_activeGroup === group ? ' active' : ''}" onclick="setActiveGroup('${group}')">
-          ${label}${count ? ` · ${count}` : ''}
+          <span class="material-symbols-outlined">${icon}</span>
+          ${label}
         </button>`;
 
       el.innerHTML = `
         <div class="home-section-label">TO DOs</div>
         ${renderFilterBar(allTodos)}
         <div class="group-tabs">
-          ${tab('task', 'Tarefas', tasks.length)}
-          ${tab('insight', 'Insights', insights.length)}
+          ${tab('task', 'Tarefas', 'checklist')}
+          ${tab('insight', 'Insights', 'auto_awesome')}
         </div>
         ${active.length ? active.map(todoCardHtml).join('') : `
           <div class="empty-state" style="padding:20px 0">
