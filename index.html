@@ -518,6 +518,11 @@
       color: var(--label-3);
     }
 
+    .todo-tag.prazo {
+      background: rgba(255,214,10,0.12);
+      color: var(--yellow);
+    }
+
     /* ─── Filter bar (TO DOs) ────────────────────────────────────────── */
     .filter-bar {
       display: flex;
@@ -531,6 +536,8 @@
     }
 
     .filter-bar::-webkit-scrollbar { display: none; }
+
+    .filter-bar-values { margin-top: -8px; }
 
     .filter-chip {
       flex-shrink: 0;
@@ -561,6 +568,7 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-top: 8px;
+      margin-bottom: 36px;
     }
 
     .nav-card {
@@ -1299,7 +1307,8 @@
 
     let _homeData = null;
     let _checkedTodos = new Set();
-    let _activeFilter = null; // { type: 'person'|'project', value: string } | null
+    let _activeFilter = null;   // { type: 'person'|'project', value: string } | null
+    let _filterCategory = null; // 'person' | 'project' | null — categoria aberta na barra de filtro
 
     async function loadHome(forceRefresh = false) {
       if (!token()) { setHomePlaceholder('Configure o token em Config'); return; }
@@ -1323,7 +1332,7 @@
 
         const pessoas  = parsePessoas(data);
         const projetos = parseProjetos(data);
-        const todos    = extractTodos(data, pessoas);
+        const todos    = extractTodos(data, pessoas, projetos);
         const payload  = { pessoas, projetos, todos };
         setHomeCache(payload);
         _homeData = payload;
@@ -1363,7 +1372,10 @@
         .sort((a,b) => a.name.localeCompare(b.name,'pt'));
     }
 
-    function extractTodos(data, pessoas) {
+    // Tarefas de PROJETOS/ são compromissos formais do projeto (herdam o prazo
+    // do frontmatter). Tarefas de REUNIOES/ e NOTAS/ são insights/action items
+    // soltos que surgem de conversas e capturas rápidas — sem prazo formal.
+    function extractTodos(data, pessoas, projetos) {
       const todos     = [];
       const pessoaNames = pessoas.map(p => p.name);
       const sources   = ['projetos','reunioes','notas'];
@@ -1373,6 +1385,8 @@
           if (!e.object?.text) return;
           const lines     = e.object.text.split('\n');
           const srcLabel  = e.name.replace('.md','').replace(/^\d{4}-\d{2}-\d{2} - /,'');
+          const origin    = src === 'projetos' ? 'task' : 'insight';
+          const prazo     = origin === 'task' ? (projetos.find(p => p.name === srcLabel)?.fm.prazo || null) : null;
 
           lines.forEach((line, i) => {
             if (!/^- \[ \]/.test(line)) return;
@@ -1390,7 +1404,7 @@
               .filter(Boolean)
               .sort((a,b) => (REL_RANK[a.fm.relacao?.toLowerCase()]??9) - (REL_RANK[b.fm.relacao?.toLowerCase()]??9));
 
-            todos.push({ text, source: srcLabel, people: rankedPeople, id: `${src}:${i}:${e.name}` });
+            todos.push({ text, source: srcLabel, people: rankedPeople, origin, prazo, id: `${src}:${i}:${e.name}` });
           });
         });
       });
@@ -1409,11 +1423,13 @@
 
     // Conta ocorrências de cada projeto/pessoa nos TO DOs abertos pra ordenar
     // os chips por relevância e decidir se vale a pena mostrar a barra.
+    // Projetos só contam tarefas de origem "task" (o filtro #projeto não faz
+    // sentido pra insights, que vêm de reuniões/notas soltas).
     function getFilterOptions(todos) {
       const projCount = new Map();
       const personCount = new Map();
       todos.forEach(t => {
-        projCount.set(t.source, (projCount.get(t.source) || 0) + 1);
+        if (t.origin === 'task') projCount.set(t.source, (projCount.get(t.source) || 0) + 1);
         t.people.forEach(p => personCount.set(p.name, (personCount.get(p.name) || 0) + 1));
       });
       const byCountDesc = (a, b) => b[1] - a[1];
@@ -1428,36 +1444,79 @@
       return todos.filter(t => t.people.some(p => p.name === _activeFilter.value));
     }
 
+    // Barra de 2 níveis: 1) categoria (Todos/Pessoas/Projetos) — só decide
+    // qual lista de valores aparece embaixo; 2) valores da categoria aberta.
+    // Evita uma lista única gigante misturando pessoas e projetos.
     function renderFilterBar(todos) {
       const { projects, people } = getFilterOptions(todos);
       if (projects.length + people.length < 2) return '';
 
-      const chip = (type, value, label) => {
-        const active = type ? (_activeFilter?.type === type && _activeFilter?.value === value) : !_activeFilter;
-        const args = type ? `'${type}','${escJs(value)}'` : 'null,null';
-        return `<button class="filter-chip${active ? ' active' : ''}" onclick="setTodoFilter(${args})">${label}</button>`;
+      const catChip = (cat, label) => {
+        const active = _filterCategory === cat;
+        return `<button class="filter-chip${active ? ' active' : ''}" onclick="setFilterCategory(${cat ? `'${cat}'` : 'null'})">${label}</button>`;
       };
 
-      return `
-        <div class="filter-bar">
-          ${chip(null, null, 'Todos')}
-          ${people.map(name => chip('person', name, '@' + name)).join('')}
-          ${projects.map(name => chip('project', name, '#' + name)).join('')}
+      let bar = `<div class="filter-bar">${catChip(null, 'Todos')}`;
+      if (people.length)   bar += catChip('person', 'Pessoas');
+      if (projects.length) bar += catChip('project', 'Projetos');
+      bar += `</div>`;
+
+      if (_filterCategory) {
+        const values = _filterCategory === 'person' ? people : projects;
+        const prefix = _filterCategory === 'person' ? '@' : '#';
+        bar += `<div class="filter-bar filter-bar-values">
+          ${values.map(name => {
+            const active = _activeFilter?.type === _filterCategory && _activeFilter?.value === name;
+            return `<button class="filter-chip${active ? ' active' : ''}" onclick="setTodoFilter('${_filterCategory}','${escJs(name)}')">${prefix}${name}</button>`;
+          }).join('')}
         </div>`;
+      }
+
+      return bar;
+    }
+
+    function setFilterCategory(cat) {
+      haptic(4);
+      _filterCategory = cat;
+      _activeFilter = null;
+      renderTodos(_homeData?.todos || []);
     }
 
     function setTodoFilter(type, value) {
       haptic(4);
-      _activeFilter = type ? { type, value } : null;
+      _activeFilter = { type, value };
       renderTodos(_homeData?.todos || []);
+    }
+
+    const MESES_ABREV = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    function fmtPrazo(iso) {
+      const d = new Date(`${iso}T00:00:00`);
+      if (isNaN(d)) return iso;
+      return `${MESES_ABREV[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`;
+    }
+
+    function todoCardHtml(t) {
+      return `
+        <div class="todo-card" onclick="toggleTodo(this, '${escJs(t.id)}')">
+          <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}"></div>
+          <div class="todo-body">
+            <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${t.text}</div>
+            <div class="todo-tags">
+              <span class="todo-tag project">${t.source}</span>
+              ${t.prazo ? `<span class="todo-tag prazo">prazo ${fmtPrazo(t.prazo)}</span>` : ''}
+              ${t.people.map(p => `<span class="todo-tag person">${p.name}</span>`).join('')}
+            </div>
+          </div>
+        </div>`;
     }
 
     function renderTodos(allTodos) {
       const el = document.getElementById('home-todos');
       if (!allTodos?.length) {
         _activeFilter = null;
+        _filterCategory = null;
         el.innerHTML = `
-          <div class="home-section-label" style="margin-top:32px">TO DOs</div>
+          <div class="home-section-label">TO DOs</div>
           <div class="empty-state" style="padding:24px 0">
             <div class="empty-icon">✅</div>
             Nenhuma tarefa aberta no vault ainda.
@@ -1466,21 +1525,20 @@
       }
 
       const filtered = applyTodoFilter(allTodos);
+      const tasks     = filtered.filter(t => t.origin === 'task');
+      const insights  = filtered.filter(t => t.origin === 'insight');
+
+      const group = (label, items) => !items.length ? '' : `
+        <div class="subsection-label">${label}</div>
+        ${items.map(todoCardHtml).join('')}`;
 
       el.innerHTML = `
         <div class="home-section-label">TO DOs</div>
         ${renderFilterBar(allTodos)}
-        ${filtered.length ? filtered.map(t => `
-          <div class="todo-card" onclick="toggleTodo(this, '${escJs(t.id)}')">
-            <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}"></div>
-            <div class="todo-body">
-              <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${t.text}</div>
-              <div class="todo-tags">
-                <span class="todo-tag project">${t.source}</span>
-                ${t.people.map(p => `<span class="todo-tag person">${p.name}</span>`).join('')}
-              </div>
-            </div>
-          </div>`).join('') : `
+        ${(tasks.length || insights.length) ? `
+          ${group('Tarefas', tasks)}
+          ${group('Insights', insights)}
+        ` : `
           <div class="empty-state" style="padding:20px 0">
             <div class="empty-icon">🔍</div>
             Nada por aqui com esse filtro.
@@ -1489,7 +1547,6 @@
 
     function renderNavCards(projetos, pessoas) {
       document.getElementById('home-nav').innerHTML = `
-        <div class="home-section-label">Explorar</div>
         <div class="nav-cards">
           <div class="nav-card" onclick="openListSheet('projetos')">
             <div class="nav-card-label">Projetos</div>
