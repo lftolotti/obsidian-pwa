@@ -480,11 +480,23 @@
       border: 0.5px solid var(--glass-b);
       padding: 14px 14px 14px 12px;
       margin-bottom: 10px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .todo-prazo-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin: 0 0 10px 2px;
+    }
+
+    .todo-card-row {
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
     }
 
     .radio-btn {
@@ -561,12 +573,16 @@
       color: var(--label-3);
     }
 
-    .todo-tag.prazo {
-      background: rgba(255,214,10,0.12);
-      color: var(--yellow);
+    /* ─── Filter bar (TO DOs) ────────────────────────────────────────── */
+    .todo-sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--bg);
+      padding-top: 6px;
+      margin-top: -6px;
     }
 
-    /* ─── Filter bar (TO DOs) ────────────────────────────────────────── */
     .filter-bar {
       display: flex;
       gap: 8px;
@@ -1607,18 +1623,21 @@
 
     function todoCardHtml(t) {
       const aiIcon = t.origin === 'insight' ? '<span class="ai-icon material-symbols-outlined" title="Insight de reunião/nota">auto_awesome</span>' : '';
+      const prazoTitle = t.prazo ? `<div class="todo-prazo-title">${fmtPrazo(t.prazo)}</div>` : '';
       return `
         <div class="todo-card" onclick="toggleTodo(this, '${escJs(t.id)}')">
-          <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}"></div>
-          <div class="todo-body">
-            <div class="todo-text-row">
-              ${aiIcon}
-              <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${formatTodoText(t.text)}</div>
-            </div>
-            <div class="todo-tags">
-              <span class="todo-tag project">${t.source}</span>
-              ${t.prazo ? `<span class="todo-tag prazo">prazo ${fmtPrazo(t.prazo)}</span>` : ''}
-              ${t.people.map(p => `<span class="todo-tag person">${p.name}</span>`).join('')}
+          ${prazoTitle}
+          <div class="todo-card-row">
+            <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}"></div>
+            <div class="todo-body">
+              <div class="todo-text-row">
+                ${aiIcon}
+                <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${formatTodoText(t.text)}</div>
+              </div>
+              <div class="todo-tags">
+                <span class="todo-tag project">${t.source}</span>
+                ${t.people.map(p => `<span class="todo-tag person">${p.name}</span>`).join('')}
+              </div>
             </div>
           </div>
         </div>`;
@@ -1651,10 +1670,12 @@
 
       el.innerHTML = `
         <div class="home-section-label">TO DOs</div>
-        ${renderFilterBar(allTodos)}
-        <div class="group-tabs">
-          ${tab('task', 'Tarefas', 'checklist')}
-          ${tab('insight', 'Insights', 'auto_awesome')}
+        <div class="todo-sticky-bar">
+          ${renderFilterBar(allTodos)}
+          <div class="group-tabs">
+            ${tab('task', 'Tarefas', 'checklist')}
+            ${tab('insight', 'Insights', 'auto_awesome')}
+          </div>
         </div>
         ${active.length ? active.map(todoCardHtml).join('') : `
           <div class="empty-state" style="padding:20px 0">
