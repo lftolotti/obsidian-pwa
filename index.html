@@ -89,15 +89,22 @@
     }
 
     .refresh-btn {
-      background: none;
-      border: none;
-      color: var(--label-3);
-      font-size: 22px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      background: rgba(255,255,255,0.10);
+      border: 0.5px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      color: var(--label);
       cursor: pointer;
-      padding: 4px 0;
       margin-top: 6px;
       -webkit-tap-highlight-color: transparent;
     }
+
+    .refresh-btn:active { opacity: 0.6; }
 
     /* ─── Panels ─────────────────────────────────────────────────────── */
     .panel { display: none; }
@@ -520,6 +527,11 @@
       font-size: 15px;
       line-height: 1.4;
       color: #bf5af2;
+    }
+
+    .mention {
+      color: #c9a7ff;
+      font-weight: 600;
     }
 
     .todo-text.done {
@@ -1585,6 +1597,12 @@
       return `${MESES_ABREV[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`;
     }
 
+    // Troca [[Nome]] (sintaxe de wikilink do Obsidian) por um destaque
+    // colorido, sem os colchetes, direto no texto do card.
+    function formatTodoText(text) {
+      return text.replace(/\[\[([^\]]+)\]\]/g, '<span class="mention">$1</span>');
+    }
+
     function todoCardHtml(t) {
       const aiIcon = t.origin === 'insight' ? '<span class="ai-icon material-symbols-outlined" title="Insight de reunião/nota">auto_awesome</span>' : '';
       return `
@@ -1593,7 +1611,7 @@
           <div class="todo-body">
             <div class="todo-text-row">
               ${aiIcon}
-              <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${t.text}</div>
+              <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${formatTodoText(t.text)}</div>
             </div>
             <div class="todo-tags">
               <span class="todo-tag project">${t.source}</span>
