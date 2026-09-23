@@ -68,6 +68,19 @@
       flex-direction: column;
     }
 
+    /* ─── Status bar mask ────────────────────────────────────────────── */
+    /* Cobre a faixa da status bar/Dynamic Island (translúcida por causa do
+       apple-mobile-web-app-status-bar-style) pra rolagem nao vazar por trás. */
+    .status-bar-mask {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--safe-top);
+      background: var(--bg);
+      z-index: 90;
+    }
+
     /* ─── Scroll Area ────────────────────────────────────────────────── */
     .scroll-area {
       flex: 1;
@@ -576,7 +589,7 @@
     /* ─── Filter bar (TO DOs) ────────────────────────────────────────── */
     .todo-sticky-bar {
       position: sticky;
-      top: 0;
+      top: var(--safe-top);
       z-index: 40;
       background: var(--bg);
       padding-top: 6px;
@@ -1096,6 +1109,8 @@
   </style>
 </head>
 <body>
+
+  <div class="status-bar-mask"></div>
 
   <div class="scroll-area" id="scroll-area">
 
