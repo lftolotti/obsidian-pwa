@@ -1,4 +1,4 @@
-const CACHE = 'cerebro-v35';
+const CACHE = 'cerebro-v36';
 const ASSETS = ['/', '/index.html', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', e => {

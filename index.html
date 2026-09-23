@@ -518,6 +518,43 @@
       color: var(--label-3);
     }
 
+    /* ─── Filter bar (TO DOs) ────────────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 2px 2px 4px;
+      margin: -6px -2px 14px;
+    }
+
+    .filter-bar::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      flex-shrink: 0;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--label-2);
+      background: var(--fill-2);
+      border: 0.5px solid var(--glass-b);
+      border-radius: 100px;
+      padding: 7px 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background var(--t), color var(--t), transform var(--t);
+    }
+
+    .filter-chip:active { transform: scale(0.95); }
+
+    .filter-chip.active {
+      background: var(--label);
+      color: #000;
+      border-color: transparent;
+    }
+
     /* ─── Nav cards ──────────────────────────────────────────────────── */
     .nav-cards {
       display: grid;
@@ -1262,6 +1299,7 @@
 
     let _homeData = null;
     let _checkedTodos = new Set();
+    let _activeFilter = null; // { type: 'person'|'project', value: string } | null
 
     async function loadHome(forceRefresh = false) {
       if (!token()) { setHomePlaceholder('Configure o token em Config'); return; }
@@ -1365,9 +1403,59 @@
       renderTodos(todos);
     }
 
-    function renderTodos(todos) {
+    function escJs(s) {
+      return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    // Conta ocorrências de cada projeto/pessoa nos TO DOs abertos pra ordenar
+    // os chips por relevância e decidir se vale a pena mostrar a barra.
+    function getFilterOptions(todos) {
+      const projCount = new Map();
+      const personCount = new Map();
+      todos.forEach(t => {
+        projCount.set(t.source, (projCount.get(t.source) || 0) + 1);
+        t.people.forEach(p => personCount.set(p.name, (personCount.get(p.name) || 0) + 1));
+      });
+      const byCountDesc = (a, b) => b[1] - a[1];
+      const projects = [...projCount.entries()].sort(byCountDesc).map(([name]) => name).slice(0, 8);
+      const people   = [...personCount.entries()].sort(byCountDesc).map(([name]) => name).slice(0, 8);
+      return { projects, people };
+    }
+
+    function applyTodoFilter(todos) {
+      if (!_activeFilter) return todos;
+      if (_activeFilter.type === 'project') return todos.filter(t => t.source === _activeFilter.value);
+      return todos.filter(t => t.people.some(p => p.name === _activeFilter.value));
+    }
+
+    function renderFilterBar(todos) {
+      const { projects, people } = getFilterOptions(todos);
+      if (projects.length + people.length < 2) return '';
+
+      const chip = (type, value, label) => {
+        const active = type ? (_activeFilter?.type === type && _activeFilter?.value === value) : !_activeFilter;
+        const args = type ? `'${type}','${escJs(value)}'` : 'null,null';
+        return `<button class="filter-chip${active ? ' active' : ''}" onclick="setTodoFilter(${args})">${label}</button>`;
+      };
+
+      return `
+        <div class="filter-bar">
+          ${chip(null, null, 'Todos')}
+          ${people.map(name => chip('person', name, '@' + name)).join('')}
+          ${projects.map(name => chip('project', name, '#' + name)).join('')}
+        </div>`;
+    }
+
+    function setTodoFilter(type, value) {
+      haptic(4);
+      _activeFilter = type ? { type, value } : null;
+      renderTodos(_homeData?.todos || []);
+    }
+
+    function renderTodos(allTodos) {
       const el = document.getElementById('home-todos');
-      if (!todos?.length) {
+      if (!allTodos?.length) {
+        _activeFilter = null;
         el.innerHTML = `
           <div class="home-section-label" style="margin-top:32px">TO DOs</div>
           <div class="empty-state" style="padding:24px 0">
@@ -1377,11 +1465,14 @@
         return;
       }
 
+      const filtered = applyTodoFilter(allTodos);
+
       el.innerHTML = `
         <div class="home-section-label">TO DOs</div>
-        ${todos.map((t,i) => `
-          <div class="todo-card" onclick="toggleTodo(${i})">
-            <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}" id="radio-${i}"></div>
+        ${renderFilterBar(allTodos)}
+        ${filtered.length ? filtered.map(t => `
+          <div class="todo-card" onclick="toggleTodo(this, '${escJs(t.id)}')">
+            <div class="radio-btn${_checkedTodos.has(t.id) ? ' checked' : ''}"></div>
             <div class="todo-body">
               <div class="todo-text${_checkedTodos.has(t.id) ? ' done' : ''}">${t.text}</div>
               <div class="todo-tags">
@@ -1389,7 +1480,11 @@
                 ${t.people.map(p => `<span class="todo-tag person">${p.name}</span>`).join('')}
               </div>
             </div>
-          </div>`).join('')}`;
+          </div>`).join('') : `
+          <div class="empty-state" style="padding:20px 0">
+            <div class="empty-icon">🔍</div>
+            Nada por aqui com esse filtro.
+          </div>`}`;
     }
 
     function renderNavCards(projetos, pessoas) {
@@ -1409,14 +1504,11 @@
         </div>`;
     }
 
-    function toggleTodo(i) {
+    function toggleTodo(cardEl, id) {
       haptic(6);
-      const todos = _homeData?.todos || [];
-      const t = todos[i];
-      if (!t) return;
-      _checkedTodos.has(t.id) ? _checkedTodos.delete(t.id) : _checkedTodos.add(t.id);
-      document.getElementById(`radio-${i}`)?.classList.toggle('checked');
-      document.querySelectorAll('.todo-card')[i]?.querySelector('.todo-text')?.classList.toggle('done');
+      _checkedTodos.has(id) ? _checkedTodos.delete(id) : _checkedTodos.add(id);
+      cardEl.querySelector('.radio-btn')?.classList.toggle('checked');
+      cardEl.querySelector('.todo-text')?.classList.toggle('done');
     }
 
     // ── Sheet navigation ──────────────────────────────────────────────
